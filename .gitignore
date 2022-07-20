@@ -11,3 +11,9 @@ bin/Debug/net6.0/config.json
 obj/Debug/net6.0/Dolores.csproj.CoreCompileInputs.cache
 obj/Debug/net6.0/Dolores.dll
 obj/Debug/net6.0/refint/Dolores.dll
+bin/Debug/net6.0/Microsoft.Win32.SystemEvents.dll
+bin/Debug/net6.0/runtimes/unix/lib/net6.0/System.Drawing.Common.dll
+bin/Debug/net6.0/runtimes/win/lib/net6.0/Microsoft.Win32.SystemEvents.dll
+bin/Debug/net6.0/runtimes/win/lib/net6.0/System.Drawing.Common.dll
+bin/Debug/net6.0/Dolores.pdb
+bin/Debug/net6.0/Dolores.dll

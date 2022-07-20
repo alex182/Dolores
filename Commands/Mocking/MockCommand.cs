@@ -12,10 +12,13 @@ namespace Dolores.Commands.Mocking
     public class MockCommand : BaseCommandModule
     {
         private readonly Utility _utility;
+        private MemeGenerator _memeGenerator { get; set; }
+
 
         public MockCommand()
         {
             _utility = new Utility();
+            _memeGenerator = new MemeGenerator();
         }
 
         [Command("ping")] // let's define this method as a command
@@ -46,12 +49,19 @@ namespace Dolores.Commands.Mocking
 
             if(message == null)
             {
-                await ctx.RespondAsync($"Couldn't find a message for {member.DisplayName}");
+                await ctx.RespondAsync($"Couldn't find a message for {member.Mention}");
             }
-            var sarcasticMessage = $"{_utility.Sarcastify(message)} {member.Mention}";
 
-            // respond with ping
-            await ctx.RespondAsync(sarcasticMessage);
+            var sarcasticImage = _memeGenerator.CreateSpongeBob(_utility.Sarcastify(message));
+            //sarcasticImage, member.Mention
+            var embedBuilder = new Discord​Embed​Builder();
+
+            var embed = embedBuilder
+                .WithImageUrl($"attachment://{System.IO.Path.GetFileName(sarcasticImage)}")
+                .WithDescription(member.Mention)
+                .Build();
+
+            await ctx.RespondAsync(message);
         }
     }
 }
