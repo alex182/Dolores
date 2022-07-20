@@ -1,4 +1,5 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System;
@@ -12,8 +13,7 @@ namespace Dolores.Commands.Mocking
     public class MockCommand : BaseCommandModule
     {
         private readonly Utility _utility;
-        private MemeGenerator _memeGenerator { get; set; }
-
+        private MemeGenerator _memeGenerator;
 
         public MockCommand()
         {
@@ -40,7 +40,7 @@ namespace Dolores.Commands.Mocking
         [Command("mock")] // let's define this method as a command
         [Description("Mocks the tagged person")] // this will be displayed to tell users what this command does when they invoke help
         [Aliases("youSuck")] // alternative names for the command
-        public async Task Mock(CommandContext ctx, DiscordMember member) // this command takes no arguments
+        public async Task Mock(CommandContext ctx, DiscordMember member)
         {
             // let's trigger a typing indicator to let
             // users know we're working
@@ -54,14 +54,15 @@ namespace Dolores.Commands.Mocking
 
             var sarcasticImage = _memeGenerator.CreateSpongeBob(_utility.Sarcastify(message));
             //sarcasticImage, member.Mention
-            var embedBuilder = new Discord​Embed​Builder();
+            var messageBuilder = new DiscordMessageBuilder();
 
-            var embed = embedBuilder
-                .WithImageUrl($"attachment://{System.IO.Path.GetFileName(sarcasticImage)}")
-                .WithDescription(member.Mention)
-                .Build();
+            using(FileStream fs = File.OpenRead(sarcasticImage))
+            {
+                var messageToSend = messageBuilder
+                .WithFile(sarcasticImage, fs);
 
-            await ctx.RespondAsync(message);
+                await ctx.RespondAsync(messageToSend);
+            }
         }
     }
 }

@@ -77,11 +77,6 @@ public class Program
         this.Commands.CommandExecuted += this.Commands_CommandExecuted;
         this.Commands.CommandErrored += this.Commands_CommandErrored;
 
-        // let's add a converter for a custom type and a name
-        //var mathopcvt = new MathOperationConverter();
-        //Commands.RegisterConverter(mathopcvt);
-        //Commands.RegisterUserFriendlyTypeName<MathOperation>("operation");
-
         // up next, let's register our commands
         this.Commands.RegisterCommands<MockCommand>();
 
