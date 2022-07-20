@@ -1,8 +1,10 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -37,5 +39,35 @@ namespace Dolores
             return newWord;
         }
 
+        public string RandomInsult(string name)
+        {
+            string insult = "";
+            
+
+            try
+            {
+                var client = new HttpClient();
+                client.BaseAddress = new Uri("https://insult.mattbas.org/api/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(
+                    new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var insultFromApi = GetInsult(client, name);
+            }
+            catch(Exception e)
+            {
+                return $"Api must be down... But HEY {name}, FUCK YOU BUDDY.";
+            }
+
+            return insult;
+        }
+
+        private async Task GetInsult(HttpClient client, string name)
+        {
+            var response = await client.GetAsync($"/api/en/insult.json?who={name}");
+            response.EnsureSuccessStatusCode();
+
+            var insultFromJson = JsonConvert.DeserializeObject(response.Content.ToString());
+        }
     }
 }

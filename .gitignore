@@ -11,3 +11,4 @@ bin/Debug/net6.0/config.json
 obj/Debug/net6.0/Dolores.csproj.CoreCompileInputs.cache
 obj/Debug/net6.0/Dolores.dll
 obj/Debug/net6.0/refint/Dolores.dll
+.vs

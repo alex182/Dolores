@@ -44,11 +44,18 @@ namespace Dolores.Commands.Mocking
             await ctx.TriggerTypingAsync();
             var message = await _utility.GetLastMessageAsync(ctx, member);
 
-            if(message == null)
+            var sarcasticMessage = string.Empty;
+
+            if (message == null)
             {
                 await ctx.RespondAsync($"Couldn't find a message for {member.DisplayName}");
             }
-            var sarcasticMessage = $"{_utility.Sarcastify(message)} {member.Mention}";
+            if (message != null && message.Contains("https", StringComparison.OrdinalIgnoreCase))
+            {
+                var insult = _utility.RandomInsult(member.DisplayName);
+                sarcasticMessage = $"{_utility.Sarcastify(insult)}";
+            }    
+            sarcasticMessage = $"{_utility.Sarcastify(message)} {member.Mention}";
 
             // respond with ping
             await ctx.RespondAsync(sarcasticMessage);
