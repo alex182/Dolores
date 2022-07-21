@@ -27,15 +27,26 @@ namespace Dolores.Commands.Roulette
             await ctx.TriggerTypingAsync();
 
             var channelExecutedIn = ctx.Channel;
-            var usersInChannel = channelExecutedIn.Users;
+
+            var guild = ctx.Guild;
+            var members = await guild.GetAllMembersAsync();
 
             var rand = new Random();
-            var timedOutUserIndex = rand.Next(0, usersInChannel.Count - 1);
-            var userForTimeout = usersInChannel[timedOutUserIndex];
+            var timedOutUserIndex = rand.Next(0, members.Count - 1);
+            DiscordMember userForTimeout;
+            if (members != null)
+            {
+                var listOfMembers = members.ToList();
+                userForTimeout = listOfMembers[timedOutUserIndex];
+            }            
+            else
+            {
+                userForTimeout = ctx.Member;
+            }
 
             var mockTheTimeout = new Mocking.MockCommand();
-            mockTheTimeout.Insult(ctx, userForTimeout);
-            userForTimeout.TimeoutAsync(new DateTimeOffset(DateTime.Now.AddMinutes(1)));
+            await mockTheTimeout.Insult(ctx, userForTimeout);
+            await userForTimeout.TimeoutAsync(new DateTimeOffset(DateTime.Now.AddMinutes(1)));
         }
     }
 }
