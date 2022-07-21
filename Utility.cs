@@ -47,15 +47,15 @@ namespace Dolores
             try
             {
                 var client = new HttpClient();
-                client.BaseAddress = new Uri("https://insult.mattbas.org/api/");
+                client.BaseAddress = new Uri("https://evilinsult.com/");
                 client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/json"));
+               
 
                 var insultFromApi = GetInsult(client, name);
             }
             catch(Exception e)
             {
+                Console.WriteLine($"Exception: {e.Message}");
                 return $"Api must be down... But HEY {name}, FUCK YOU BUDDY.";
             }
 
@@ -64,10 +64,15 @@ namespace Dolores
 
         private async Task GetInsult(HttpClient client, string name)
         {
-            var response = await client.GetAsync($"/api/en/insult.json?who={name}");
+            var response = await client.GetAsync("generate_insult.php?type=xml&lang=en");
             response.EnsureSuccessStatusCode();
 
-            var insultFromJson = JsonConvert.DeserializeObject(response.Content.ToString());
+            var content = response.Content.ReadAsStringAsync();
+
+            var otherShit = response.Content.ReadAsStringAsync();
+            var insultFromSplit = content.ToString().Split('>')[6];
+
+            insultFromApi = insultFromSplit;
         }
     }
 }

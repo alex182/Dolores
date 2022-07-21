@@ -44,7 +44,7 @@ namespace Dolores.Commands.Mocking
         {
             await ctx.TriggerTypingAsync();
             var message = await _utility.GetLastMessageAsync(ctx, member);
-
+            DiscordMessageBuilder messageToSend = new DiscordMessageBuilder();
             var sarcasticMessage = string.Empty;
 
             if (message == null)
@@ -52,12 +52,19 @@ namespace Dolores.Commands.Mocking
                 await ctx.RespondAsync($"Couldn't find a message for {member.Mention}");
             }
 
+            if (message.Contains("https",StringComparison.OrdinalIgnoreCase))
+            {
+                messageToSend.Content = _utility.RandomInsult(member.DisplayName);
+
+                await ctx.RespondAsync(messageToSend);
+            }
+
             var sarcasticImage = _memeGenerator.CreateSpongeBob(_utility.Sarcastify(message));
             var messageBuilder = new DiscordMessageBuilder();
 
             using(FileStream fs = File.OpenRead(sarcasticImage))
             {
-                var messageToSend = messageBuilder
+                messageToSend = messageBuilder
                 .WithFile(sarcasticImage, fs);
 
                 await ctx.RespondAsync(messageToSend);
