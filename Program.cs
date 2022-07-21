@@ -29,20 +29,22 @@ public class Program
 
     public async Task RunBotAsync()
     {
-        // first, let's load our configuration file
-        var json = "";
-        using (var fs = File.OpenRead("config.json"))
-        using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-            json = await sr.ReadToEndAsync();
+        var discordKey = Environment.GetEnvironmentVariable("DiscordKey");
 
-        // next, let's load the values from that file
-        // to our client's configuration
-        var cfgjson = JsonConvert.DeserializeObject<ConfigJson>(json);
+        if(string.IsNullOrEmpty(discordKey))
+            throw new ArgumentNullException(nameof(discordKey));
+        //prod is .
+        //alex is !
+        //denny is a twat
+        var commandPrefix = Environment.GetEnvironmentVariable("DiscordBotCommandPrefix");
+        if (string.IsNullOrEmpty(commandPrefix))
+            throw new ArgumentNullException(nameof(commandPrefix));
+
         var cfg = new DiscordConfiguration
         {
-            Token = cfgjson.Token,
+            Token = discordKey,
             TokenType = TokenType.Bot,
-
+            
             AutoReconnect = true,
             MinimumLogLevel = LogLevel.Debug,
         };
@@ -60,7 +62,7 @@ public class Program
         var ccfg = new CommandsNextConfiguration
         {
             // let's use the string prefix defined in config.json
-            StringPrefixes = new[] { cfgjson.CommandPrefix },
+            StringPrefixes = new[] { commandPrefix },
 
             // enable responding in direct messages
             EnableDms = true,
@@ -76,11 +78,6 @@ public class Program
         // going on
         this.Commands.CommandExecuted += this.Commands_CommandExecuted;
         this.Commands.CommandErrored += this.Commands_CommandErrored;
-
-        // let's add a converter for a custom type and a name
-        //var mathopcvt = new MathOperationConverter();
-        //Commands.RegisterConverter(mathopcvt);
-        //Commands.RegisterUserFriendlyTypeName<MathOperation>("operation");
 
         // up next, let's register our commands
         this.Commands.RegisterCommands<MockCommand>();

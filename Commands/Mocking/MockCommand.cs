@@ -1,4 +1,5 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System;
@@ -12,10 +13,12 @@ namespace Dolores.Commands.Mocking
     public class MockCommand : BaseCommandModule
     {
         private readonly Utility _utility;
+        private MemeGenerator _memeGenerator;
 
         public MockCommand()
         {
             _utility = new Utility();
+            _memeGenerator = new MemeGenerator();
         }
 
         [Command("ping")] // let's define this method as a command
@@ -37,10 +40,8 @@ namespace Dolores.Commands.Mocking
         [Command("mock")] // let's define this method as a command
         [Description("Mocks the tagged person")] // this will be displayed to tell users what this command does when they invoke help
         [Aliases("youSuck")] // alternative names for the command
-        public async Task Mock(CommandContext ctx, DiscordMember member) // this command takes no arguments
+        public async Task Mock(CommandContext ctx, DiscordMember member)
         {
-            // let's trigger a typing indicator to let
-            // users know we're working
             await ctx.TriggerTypingAsync();
             var message = await _utility.GetLastMessageAsync(ctx, member);
 
@@ -48,17 +49,19 @@ namespace Dolores.Commands.Mocking
 
             if (message == null)
             {
-                await ctx.RespondAsync($"Couldn't find a message for {member.DisplayName}");
+                await ctx.RespondAsync($"Couldn't find a message for {member.Mention}");
             }
-            if (message != null && message.Contains("https", StringComparison.OrdinalIgnoreCase))
-            {
-                var insult = _utility.RandomInsult(member.DisplayName);
-                sarcasticMessage = $"{_utility.Sarcastify(insult)}";
-            }    
-            sarcasticMessage = $"{_utility.Sarcastify(message)} {member.Mention}";
 
-            // respond with ping
-            await ctx.RespondAsync(sarcasticMessage);
+            var sarcasticImage = _memeGenerator.CreateSpongeBob(_utility.Sarcastify(message));
+            var messageBuilder = new DiscordMessageBuilder();
+
+            using(FileStream fs = File.OpenRead(sarcasticImage))
+            {
+                var messageToSend = messageBuilder
+                .WithFile(sarcasticImage, fs);
+
+                await ctx.RespondAsync(messageToSend);
+            }
         }
     }
 }
