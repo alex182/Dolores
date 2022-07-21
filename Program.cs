@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Dolores.Commands.Mocking;
+using Dolores.Commands.Roulette;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -81,7 +82,7 @@ public class Program
 
         // up next, let's register our commands
         this.Commands.RegisterCommands<MockCommand>();
-
+        this.Commands.RegisterCommands<TimeoutRoulette>();
 
         // set up our custom help formatter
         this.Commands.SetHelpFormatter<MockingFormatter>();

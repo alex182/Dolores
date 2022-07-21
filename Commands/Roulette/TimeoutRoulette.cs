@@ -22,11 +22,9 @@ namespace Dolores.Commands.Roulette
         [Command("timeout")] // let's define this method as a command
         [Description("Timeout Roulette Bitches!")] // this will be displayed to tell users what this command does when they invoke help
         [Aliases("spicy")] // alternative names for the command
-        public async Task Timeout(CommandContext ctx, int timeoutSpan)
+        public async Task Timeout(CommandContext ctx)
         {
             await ctx.TriggerTypingAsync();
-
-            var timeoutTime = timeoutSpan;
 
             var channelExecutedIn = ctx.Channel;
             var usersInChannel = channelExecutedIn.Users;
