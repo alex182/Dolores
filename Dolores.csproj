@@ -14,10 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="readme.md" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Commands\Mocking\Images\Base\spongebob.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
