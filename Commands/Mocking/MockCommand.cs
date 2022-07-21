@@ -44,31 +44,35 @@ namespace Dolores.Commands.Mocking
         {
             await ctx.TriggerTypingAsync();
             var message = await _utility.GetLastMessageAsync(ctx, member);
-            DiscordMessageBuilder messageToSend = new DiscordMessageBuilder();
-            var sarcasticMessage = string.Empty;
 
             if (message == null)
             {
                 await ctx.RespondAsync($"Couldn't find a message for {member.Mention}");
             }
 
-            if (message.Contains("https",StringComparison.OrdinalIgnoreCase))
-            {
-                messageToSend.Content = _utility.RandomInsult(member.DisplayName);
-
-                await ctx.RespondAsync(messageToSend);
-            }
-
             var sarcasticImage = _memeGenerator.CreateSpongeBob(_utility.Sarcastify(message));
             var messageBuilder = new DiscordMessageBuilder();
 
-            using(FileStream fs = File.OpenRead(sarcasticImage))
+            using (FileStream fs = File.OpenRead(sarcasticImage))
             {
-                messageToSend = messageBuilder
+                var messageToSend = messageBuilder
                 .WithFile(sarcasticImage, fs);
 
                 await ctx.RespondAsync(messageToSend);
             }
+        }
+
+        [Command("insult")] // let's define this method as a command
+        [Description("Mocks the tagged person")] // this will be displayed to tell users what this command does when they invoke help
+        [Aliases("youReallySuck")] // alternative names for the command
+        public async Task Insult(CommandContext ctx, DiscordMember member)
+        {
+            await ctx.TriggerTypingAsync();
+            var message = await _utility.GetLastMessageAsync(ctx, member);
+
+            var insult = await _utility.RandomInsult(member.DisplayName);
+
+            await ctx.RespondAsync($"{member.Mention} {insult}");
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using Dolores.Models.InsultApi;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using System;
@@ -39,19 +40,18 @@ namespace Dolores
             return newWord;
         }
 
-        public string RandomInsult(string name)
+        public async Task<string> RandomInsult(string name)
         {
-            string insult = "";
-            
+            string insult = "";         
 
             try
             {
                 var client = new HttpClient();
                 client.BaseAddress = new Uri("https://evilinsult.com/");
-                client.DefaultRequestHeaders.Accept.Clear();
-               
+                client.DefaultRequestHeaders.Accept.Clear();           
 
-                var insultFromApi = GetInsult(client, name);
+                var insultFromApi = await GetInsult(client, name);
+                insult = insultFromApi.insult;
             }
             catch(Exception e)
             {
@@ -62,17 +62,14 @@ namespace Dolores
             return insult;
         }
 
-        private async Task GetInsult(HttpClient client, string name)
+        private async Task<InsultApiResponse> GetInsult(HttpClient client, string name)
         {
-            var response = await client.GetAsync("generate_insult.php?type=xml&lang=en");
+            var response = await client.GetAsync("generate_insult.php?lang=en&type=json");
             response.EnsureSuccessStatusCode();
 
-            var content = response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync();
 
-            var otherShit = response.Content.ReadAsStringAsync();
-            var insultFromSplit = content.ToString().Split('>')[6];
-
-            insultFromApi = insultFromSplit;
+            return JsonConvert.DeserializeObject<InsultApiResponse>(body);
         }
     }
 }
