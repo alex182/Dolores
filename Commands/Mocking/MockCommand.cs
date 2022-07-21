@@ -42,8 +42,6 @@ namespace Dolores.Commands.Mocking
         [Aliases("youSuck")] // alternative names for the command
         public async Task Mock(CommandContext ctx, DiscordMember member)
         {
-            // let's trigger a typing indicator to let
-            // users know we're working
             await ctx.TriggerTypingAsync();
             var message = await _utility.GetLastMessageAsync(ctx, member);
 
@@ -53,7 +51,6 @@ namespace Dolores.Commands.Mocking
             }
 
             var sarcasticImage = _memeGenerator.CreateSpongeBob(_utility.Sarcastify(message));
-            //sarcasticImage, member.Mention
             var messageBuilder = new DiscordMessageBuilder();
 
             using(FileStream fs = File.OpenRead(sarcasticImage))
