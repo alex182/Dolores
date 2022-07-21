@@ -14,6 +14,8 @@ Store your command prefix in this environmental variable:
 	- DiscordBotCommandPrefix
 
 Command prefixes being used already (dont use these):
+
+
 	- !
 
 
