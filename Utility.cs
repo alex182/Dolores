@@ -71,6 +71,8 @@ namespace Dolores
 
             var body = await response.Content.ReadAsStringAsync();
 
+            body = body.Replace("&amp;", "&");
+
             return JsonConvert.DeserializeObject<InsultApiResponse>(body);
         }
     }
