@@ -44,9 +44,16 @@ namespace Dolores.Commands.Roulette
                 userForTimeout = ctx.Member;
             }
 
-            var mockTheTimeout = new Mocking.MockCommand();
-            await mockTheTimeout.Insult(ctx, userForTimeout);
-            await userForTimeout.TimeoutAsync(new DateTimeOffset(DateTime.Now.AddMinutes(1)));
+            var mockTheTimeout = new Mocking.MockCommand();            
+            if (ctx.Channel.Id.ToString().Contains("general"))
+            {
+                await mockTheTimeout.Insult(ctx, userForTimeout);
+                await userForTimeout.TimeoutAsync(new DateTimeOffset(DateTime.Now.AddMinutes(1)));
+            }
+            else
+            {
+                await ctx.RespondAsync($"{ctx.Member.Mention} We only play timeout roulette in the general channel so EVERYONE can play <3");
+            }
         }
     }
 }
