@@ -20,3 +20,6 @@ Command prefixes being used already (dont use these):
 
 
 	- . 
+	
+	
+	- ^
