@@ -38,15 +38,17 @@ namespace Dolores.Commands.Roulette
             {
                 var listOfMembers = members.ToList();
                 userForTimeout = listOfMembers[timedOutUserIndex];
-            }            
+            }
             else
             {
                 userForTimeout = ctx.Member;
             }
 
-            var mockTheTimeout = new Mocking.MockCommand();            
-            if (ctx.Channel.Id.ToString().Contains("general"))
+            var mockTheTimeout = new Mocking.MockCommand();
+            if (channelExecutedIn.ToString().Contains("#general"))
             {
+                await ctx.RespondAsync($"{ctx.Guild.EveryoneRole} LET'S PLAY SOME TIMEOUT ROULETTE MOTHER FUCKERS!");
+                Thread.Sleep(1000);
                 await mockTheTimeout.Insult(ctx, userForTimeout);
                 await userForTimeout.TimeoutAsync(new DateTimeOffset(DateTime.Now.AddMinutes(1)));
             }
