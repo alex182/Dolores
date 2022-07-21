@@ -33,7 +33,9 @@ public class Program
 
         if(string.IsNullOrEmpty(discordKey))
             throw new ArgumentNullException(nameof(discordKey));
-
+        //prod is .
+        //alex is !
+        //denny is a twat
         var commandPrefix = Environment.GetEnvironmentVariable("DiscordBotCommandPrefix");
         if (string.IsNullOrEmpty(commandPrefix))
             throw new ArgumentNullException(nameof(commandPrefix));
