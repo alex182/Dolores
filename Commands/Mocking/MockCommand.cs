@@ -68,7 +68,6 @@ namespace Dolores.Commands.Mocking
         public async Task Insult(CommandContext ctx, DiscordMember member)
         {
             await ctx.TriggerTypingAsync();
-            var message = await _utility.GetLastMessageAsync(ctx, member);
 
             var insult = await _utility.RandomInsult(member.DisplayName);
 
