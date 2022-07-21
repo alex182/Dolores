@@ -64,7 +64,9 @@ namespace Dolores
 
         private async Task<InsultApiResponse> GetInsult(HttpClient client, string name)
         {
-            var response = await client.GetAsync("generate_insult.php?lang=en&type=json");
+            var rand = new Random();
+            var nameRand = name + rand.Next(9999);
+            var response = await client.GetAsync($"generate_insult.php?lang=en&type=json&name={nameRand}");
             response.EnsureSuccessStatusCode();
 
             var body = await response.Content.ReadAsStringAsync();
