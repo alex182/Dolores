@@ -9,7 +9,12 @@
 
   <ItemGroup>
     <None Remove="Commands\Mocking\Images\Base\spongebob.jpg" />
+    <None Remove="readme.md" />
     <None Remove="spongebob.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="readme.md" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,16 +37,6 @@
     <PackageReference Include="DSharpPlus" Version="4.2.0" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="config.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
