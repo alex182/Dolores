@@ -32,7 +32,8 @@ namespace Dolores.Commands.Roulette
             var guild = ctx.Guild;
             var members = await guild.GetAllMembersAsync();
             DiscordMember userForTimeout = null;
-
+            if (Program.timedOutUsers == null)
+                Program.timedOutUsers = new List<DiscordMember>();
             if (Program.timedOutUsers.Count == members.Count)
             {
                 Program.timedOutUsers.Clear();
