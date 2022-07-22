@@ -19,11 +19,13 @@ public class Program
 
     public DiscordClient Client { get; set; }
     public CommandsNextExtension Commands { get; set; }
+    public static List<DiscordMember> timedOutUsers;
 
     public static void Main(string[] args)
     {
         // since we cannot make the entry method asynchronous,
         // let's pass the execution to asynchronous code
+        var timedOutUsers = new List<DiscordMember>();
         var prog = new Program();
         prog.RunBotAsync().GetAwaiter().GetResult();
     }

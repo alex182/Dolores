@@ -7,7 +7,7 @@ namespace Dolores.Commands.Mocking
     {
         public string CreateMeme(string imagePath, string topText, string bottomText)
         {
-            PointF firstLocation = new PointF(10f, 10f);
+            PointF firstLocation = new PointF(9f, 10f);
             PointF secondLocation = new PointF(10f, 500f);
 
             Guid fileGuid = Guid.NewGuid();

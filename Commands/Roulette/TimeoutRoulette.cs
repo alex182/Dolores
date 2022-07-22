@@ -12,10 +12,11 @@ namespace Dolores.Commands.Roulette
     public class TimeoutRoulette : BaseCommandModule
     {
         private readonly Utility _utility;
+        
 
         public TimeoutRoulette()
         {
-            _utility = new Utility();
+            _utility = new Utility();            
         }
 
 
@@ -30,23 +31,41 @@ namespace Dolores.Commands.Roulette
 
             var guild = ctx.Guild;
             var members = await guild.GetAllMembersAsync();
-
-            var rand = new Random();
-            var timedOutUserIndex = rand.Next(0, members.Count - 1);
-            DiscordMember userForTimeout;
-            if (members != null)
+            DiscordMember userForTimeout = null;
+            if (Program.timedOutUsers == null)
+                Program.timedOutUsers = new List<DiscordMember>();
+            if (Program.timedOutUsers.Count == members.Count)
             {
-                var listOfMembers = members.ToList();
-                userForTimeout = listOfMembers[timedOutUserIndex];
-            }            
-            else
-            {
-                userForTimeout = ctx.Member;
+                Program.timedOutUsers.Clear();
             }
 
-            var mockTheTimeout = new Mocking.MockCommand();            
-            if (ctx.Channel.Id.ToString().Contains("general"))
+            while (userForTimeout == null)
             {
+                var rand = new Random();
+                var timedOutUserIndex = rand.Next(0, members.Count - 1);
+
+                if (members != null)
+                {
+                    var listOfMembers = members.ToList();
+                    userForTimeout = listOfMembers[timedOutUserIndex];                    
+                }
+                else
+                {
+                    userForTimeout = ctx.Member;
+                }
+
+                if (Program.timedOutUsers.Contains(userForTimeout))
+                    userForTimeout = null;
+                Program.timedOutUsers.Add(userForTimeout);
+            }         
+            
+
+            var mockTheTimeout = new Mocking.MockCommand();
+            if (channelExecutedIn.ToString().Contains("#general"))
+            {
+                await ctx.RespondAsync($"{ctx.Guild.EveryoneRole} LET'S PLAY SOME TIMEOUT ROULETTE MOTHER FUCKERS!");
+                Thread.Sleep(1000);
+                await ctx.RespondAsync($"{userForTimeout.Mention} CONGRATULATIONS! YOU HAVE WON THE AMAZING PRIZE OF A MOTHA FUCKIN TIMEOUT!!!!!");
                 await mockTheTimeout.Insult(ctx, userForTimeout);
                 await userForTimeout.TimeoutAsync(new DateTimeOffset(DateTime.Now.AddMinutes(1)));
             }
