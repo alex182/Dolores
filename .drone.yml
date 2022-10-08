@@ -1,0 +1,19 @@
+﻿kind: pipeline
+type: exec
+name: default
+
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: restore packages
+  commands:
+  - dotnet restore
+- name: build
+  commands:
+  - dotnet build
+- name: publish
+  commands:
+  - dotnet publish -c Release -o ./bin/

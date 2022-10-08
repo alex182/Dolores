@@ -8,17 +8,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove=".drone.yml" />
+    <None Remove="build.sh" />
     <None Remove="Commands\Mocking\Images\Base\spongebob.jpg" />
     <None Remove="readme.md" />
+    <None Remove="runtimeconfig.template.json" />
     <None Remove="spongebob.jpg" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include=".drone.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="build.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Commands\Mocking\Images\Base\spongebob.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Program.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimeconfig.template.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="spongebob.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
