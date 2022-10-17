@@ -12,13 +12,13 @@ namespace Dolores.Commands.Mocking
 {
     public class MockCommand : BaseCommandModule
     {
-        private readonly Utility _utility;
+        private readonly IUtility _utility;
         private MemeGenerator _memeGenerator;
 
-        public MockCommand()
+        public MockCommand(IUtility utility, MemeGenerator memeGenerator)
         {
-            _utility = new Utility();
-            _memeGenerator = new MemeGenerator();
+            _utility = utility;
+            _memeGenerator = memeGenerator;
         }
 
         [Command("ping")] // let's define this method as a command
