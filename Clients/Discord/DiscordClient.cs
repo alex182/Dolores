@@ -12,6 +12,7 @@ using DSharpPlus.Entities;
 using DSharpPlus;
 using Dolores.Clients.Discord.Models;
 using DSharpPlus.CommandsNext.Exceptions;
+using Dolores.Commands.Sloganizer;
 
 namespace Dolores.Clients.Discord
 {
@@ -35,6 +36,7 @@ namespace Dolores.Clients.Discord
             _commands.CommandErrored += Commands_CommandErrored;
 
             _commands.RegisterCommands<MockCommand>();
+            _commands.RegisterCommands<SloganizerCommand>();
             //_commands.RegisterCommands<TimeoutRoulette>();
             _commands.SetHelpFormatter<MockingFormatter>();
 

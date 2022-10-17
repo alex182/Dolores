@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Dolores.Clients.Discord;
 using Dolores.Commands.Mocking;
+using Dolores.Commands.Sloganizer;
 
 namespace Dolores.Startup
 {
@@ -47,6 +48,10 @@ namespace Dolores.Startup
             var dsharpClient = new DSharpPlus.DiscordClient(dsharpDiscordClientConfiguration);
 
             var httpClient = new HttpClient();
+            var sloganizerOptions = new SloganizerOptions()
+            {
+                BaseUrl = "http://www.sloganizer.net"
+            }; 
 
             var dsharpCommandConfiguration = new CommandsNextConfiguration
             {
@@ -54,6 +59,7 @@ namespace Dolores.Startup
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 Services = services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
+                    .AddSingleton<ISloganizerOptions, SloganizerOptions>(provider => sloganizerOptions)
                     .AddTransient<MemeGenerator, MemeGenerator>()
                     .AddSingleton<IUtility, Utility>()
                     .BuildServiceProvider()
