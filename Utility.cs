@@ -11,8 +11,15 @@ using System.Threading.Tasks;
 
 namespace Dolores
 {
-    public class Utility
+    public class Utility : IUtility
     {
+        private readonly HttpClient _httpClient;
+
+        public Utility(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         public async Task<string> GetLastMessageAsync(CommandContext ctx, DiscordMember member)
         {
             var messages = await ctx.Channel.GetMessagesAsync(100);
@@ -42,18 +49,14 @@ namespace Dolores
 
         public async Task<string> RandomInsult(string name)
         {
-            string insult = "";         
+            string insult = "";
 
             try
             {
-                var client = new HttpClient();
-                client.BaseAddress = new Uri("https://evilinsult.com/");
-                client.DefaultRequestHeaders.Accept.Clear();           
-
-                var insultFromApi = await GetInsult(client, name);
+                var insultFromApi = await GetInsult(name);
                 insult = insultFromApi.insult;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine($"Exception: {e.Message}");
                 return $"Api must be down... But HEY {name}, FUCK YOU BUDDY.";
@@ -62,11 +65,14 @@ namespace Dolores
             return insult;
         }
 
-        private async Task<InsultApiResponse> GetInsult(HttpClient client, string name)
+        private async Task<InsultApiResponse> GetInsult(string name)
         {
+            _httpClient.BaseAddress = new Uri("https://evilinsult.com/");
+            _httpClient.DefaultRequestHeaders.Accept.Clear();
+
             var rand = new Random();
             var nameRand = name + rand.Next(9999);
-            var response = await client.GetAsync($"generate_insult.php?lang=en&type=json&name={nameRand}");
+            var response = await _httpClient.GetAsync($"generate_insult.php?lang=en&type=json&name={nameRand}");
             response.EnsureSuccessStatusCode();
 
             var body = await response.Content.ReadAsStringAsync();

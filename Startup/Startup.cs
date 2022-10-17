@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Dolores.Clients.Discord;
+using Dolores.Commands.Mocking;
 
 namespace Dolores.Startup
 {
@@ -45,14 +46,22 @@ namespace Dolores.Startup
 
             var dsharpClient = new DSharpPlus.DiscordClient(dsharpDiscordClientConfiguration);
 
+            var httpClient = new HttpClient();
+
             var dsharpCommandConfiguration = new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { commandPrefix },
                 EnableDms = true,
-                EnableMentionPrefix = true
+                EnableMentionPrefix = true,
+                Services = services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
+                    .AddTransient<MemeGenerator, MemeGenerator>()
+                    .AddSingleton<IUtility, Utility>()
+                    .BuildServiceProvider()
             };
 
-            services.AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient)
+
+           services
+                .AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient)
                 .AddSingleton<CommandsNextConfiguration, CommandsNextConfiguration>(provider => dsharpCommandConfiguration)
                 .AddSingleton<IDiscordClient, Clients.Discord.DiscordClient>()
                 .BuildServiceProvider();
