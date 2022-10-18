@@ -13,6 +13,12 @@ using DSharpPlus;
 using Dolores.Clients.Discord.Models;
 using DSharpPlus.CommandsNext.Exceptions;
 using Dolores.Commands.Sloganizer;
+using Dolores.Clients.HAMqtt;
+using System.Text.Json;
+using Dolores.Clients.HAMqtt.Models;
+using Dolores.Clients.HAMqtt.Models.RocketLaunchLive.Response;
+using Newtonsoft.Json;
+using Dolores.Clients.Discord.Models.DiscordWebhookMessage;
 
 namespace Dolores.Clients.Discord
 {
@@ -21,11 +27,19 @@ namespace Dolores.Clients.Discord
         public readonly EventId BotEventId = new EventId(42, "Bot-Ex02");
         public DSharpPlus.DiscordClient _client { get; set; }
         public CommandsNextExtension _commands { get; set; }
-        public static List<DiscordMember> _timedOutUsers = new List<DiscordMember>();
+        private readonly IMqttClient _mqttClient;
+        private HttpClient _httpClient;
+        private readonly IDiscordClientOptions _discordClientOptions;
 
         public DiscordClient(DSharpPlus.DiscordClient discordClient,
-            CommandsNextConfiguration commandsNextConfiguration)
+            CommandsNextConfiguration commandsNextConfiguration, IMqttClient mqttClient, HttpClient httpClient,
+            IDiscordClientOptions discordClientOptions)
         {
+            _discordClientOptions = discordClientOptions;
+
+            _httpClient = httpClient;
+            _mqttClient = mqttClient;
+
             _client = discordClient;
             _client.Ready += Client_Ready;
             _client.GuildAvailable += Client_GuildAvailable;
@@ -45,9 +59,62 @@ namespace Dolores.Clients.Discord
 
         public async Task RunBotAsync()
         {
-            // finally, let's connect and log in
             await _client.ConnectAsync();
-            // and this is to prevent premature quitting
+            var client = await _mqttClient.SubscribeToTopic();
+
+            client.ApplicationMessageReceivedAsync += e  =>
+            {
+                Console.WriteLine("Received application message.");
+
+                string output = "";
+                if (e != null)
+                {
+                    output = JsonConvert.SerializeObject(e);
+                }
+
+                var response = JsonConvert.DeserializeObject<MqttMessage>(output);
+                var data = Convert.FromBase64String(response.ApplicationMessage.Payload);
+                string decodedString = Encoding.UTF8.GetString(data);
+
+                var launchInfo = JsonConvert.DeserializeObject<MqttResponse>(decodedString);
+                Console.WriteLine($"{JsonConvert.SerializeObject(launchInfo)}");
+
+                var message = new DiscordWebhookMessage()
+                {
+                    content ="Launch Notification"
+                };
+
+
+                foreach (var launch in launchInfo.Result.Result)
+                {
+                    var embed = new Embed();
+                    embed.title = launch.Name;
+                    embed.color = 5814783;
+                    embed.description = launch.Mission_Description; 
+
+                    embed.fields.Add(new Field
+                    {
+                        name = "Slug",
+                        value = launch.Slug
+                    });
+
+                    message.embeds.Add(embed);
+                }
+
+                using StringContent content = new StringContent(JsonConvert.SerializeObject(message),Encoding.UTF8,"aplication/json");
+
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri(_discordClientOptions.WebhookUrl),
+                    Content = content,
+                };
+                
+                var psotresp = _httpClient.SendAsync(request).GetAwaiter().GetResult();
+
+                return Task.Delay(60000);
+            };
+
             await Task.Delay(-1);
         }
 

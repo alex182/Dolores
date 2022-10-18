@@ -8,11 +8,6 @@ namespace Dolores.Clients.Discord.Models
 {
     public class DiscordClientOptions : IDiscordClientOptions
     {
-        public string DiscordKey { get; set; }
-
-        //prod is .
-        //alex is !
-        //denny is a twat
-        public string DiscordCommandPrefix { get; set; }
+        public string WebhookUrl { get; set; }
     }
 }
