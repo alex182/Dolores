@@ -2,7 +2,6 @@
 {
     public interface IDiscordClientOptions
     {
-        string DiscordCommandPrefix { get; set; }
-        string DiscordKey { get; set; }
+        string WebhookUrl { get; set; }
     }
 }

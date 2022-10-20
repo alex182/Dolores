@@ -52,7 +52,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Clients\HAMqtt\" />
     <Folder Include="Commands\Mocking\Images\Generated\" />
   </ItemGroup>
 
