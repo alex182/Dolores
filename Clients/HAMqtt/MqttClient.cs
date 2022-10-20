@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Dolores.Clients.HAMqtt
 {
-    public class MqttClient : IMqttClient
+    public abstract class MqttClient : IMqttClient
     {
         private readonly IMqttOptions _mqttOptions;
         private readonly MqttFactory _mqttFactory;

@@ -48,7 +48,7 @@ namespace Dolores.Startup
             if (string.IsNullOrEmpty(discordClientOptions.WebhookUrl))
                 throw new NullReferenceException(nameof(discordClientOptions.WebhookUrl));
 
-            var haMqttOptions = new HomeAssistantMqttOptions()
+            var launchMqttOptions = new LaunchMqttOptions()
             {
                 Username = Environment.GetEnvironmentVariable("mqttUserName"),
                 Password = Environment.GetEnvironmentVariable("mqttPassword"),
@@ -56,14 +56,14 @@ namespace Dolores.Startup
                 Topic = "/Bard/Launch"
             };
 
-            if (string.IsNullOrEmpty(haMqttOptions.Username))
-                throw new NullReferenceException(nameof(haMqttOptions.Username));
+            if (string.IsNullOrEmpty(launchMqttOptions.Username))
+                throw new NullReferenceException(nameof(launchMqttOptions.Username));
 
-            if (string.IsNullOrEmpty(haMqttOptions.Password))
-                throw new NullReferenceException(nameof(haMqttOptions.Password));
+            if (string.IsNullOrEmpty(launchMqttOptions.Password))
+                throw new NullReferenceException(nameof(launchMqttOptions.Password));
 
-            if (string.IsNullOrEmpty(haMqttOptions.BaseAddress))
-                throw new NullReferenceException(nameof(haMqttOptions.BaseAddress));
+            if (string.IsNullOrEmpty(launchMqttOptions.BaseAddress))
+                throw new NullReferenceException(nameof(launchMqttOptions.BaseAddress));
 
             var dsharpDiscordClientConfiguration = new DiscordConfiguration
             {
@@ -98,9 +98,9 @@ namespace Dolores.Startup
            services
                 .AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient)
                 .AddSingleton<CommandsNextConfiguration, CommandsNextConfiguration>(provider => dsharpCommandConfiguration)
-                .AddSingleton<IMqttOptions, HomeAssistantMqttOptions>(provider => haMqttOptions)
+                .AddSingleton<LaunchMqttOptions, LaunchMqttOptions>(provider => launchMqttOptions)
                 .AddSingleton<MqttFactory, MqttFactory>(provider => new MqttFactory())
-                .AddSingleton<IMqttClient,MqttClient>()
+                .AddSingleton<LaunchMqttClient, LaunchMqttClient>()
                 .AddSingleton<IDiscordClientOptions,DiscordClientOptions>(provider => discordClientOptions)
                 .AddSingleton<IDiscordClient, Clients.Discord.DiscordClient>()
                 .BuildServiceProvider();
