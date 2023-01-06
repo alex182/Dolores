@@ -1,4 +1,5 @@
-﻿using Dolores.Commands.NytSpeaker.Model;
+﻿using Dolores.Clients.Discord.Models.DiscordWebhookMessage;
+using Dolores.Commands.NytSpeaker.Model;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -30,20 +31,17 @@ namespace Dolores.Commands.NytSpeaker
             var deserialized = JsonConvert.DeserializeObject<List<NytSpeakerResponse>>(message);
             var mostRecent = deserialized[deserialized.Count - 1];
 
-            var messageToSend = $"Round: {mostRecent.vote_round}";
-            await ctx.RespondAsync(messageToSend);
-
             foreach (var nominee in mostRecent.values)
             {
-                var name = nominee.key;
+                var embedBuilder = new DiscordEmbedBuilder();
+                embedBuilder.Title = $"Round: {mostRecent.vote_round}";
+
                 var republicanVotes = 0;
                 var democratVotes = 0;
                 var otherVotes = 0;
 
                 foreach (var votes in nominee.values)
                 {
-                    messageToSend = "";
-
                     if (votes.key.ToLower() == "d")
                     {
                         democratVotes = votes.value;
@@ -57,8 +55,12 @@ namespace Dolores.Commands.NytSpeaker
                         otherVotes += votes.value;
                     }
 
-                    messageToSend = $" Nominee: {name} Republican Votes: {republicanVotes} Democrat Votes: {democratVotes} Other: {otherVotes} Total: {nominee.total}";
-                    await ctx.RespondAsync(messageToSend);
+                    embedBuilder.AddField("Nominee", nominee.key, true);
+                    embedBuilder.AddField("Democrat Votes", democratVotes.ToString(), true);
+                    embedBuilder.AddField("Republican Votes", republicanVotes.ToString(), true);
+                    embedBuilder.AddField("Other Votes", otherVotes.ToString(), true);
+                    embedBuilder.AddField("Total Votes", nominee.total.ToString(), true);
+                    await ctx.RespondAsync(embedBuilder.Build());
                 }
             }
 
