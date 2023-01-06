@@ -42,15 +42,21 @@ namespace Dolores.Commands.NytSpeaker
                 var nomineeToAdd = new VoteCount();
                 nomineeToAdd.NomineeName = nominee.key;
                 nomineeToAdd.TotalVotes = nominee.total;
-                totalVotes += nominee.total;
+
+                if(nominee.key.ToLower() != "present")
+                    totalVotes += nominee.total;
 
                 nominees.Add(nomineeToAdd);
             }
 
             foreach (var nominee in nominees)
             {
-                float percentOfVote = nominee.TotalVotes/totalVotes;
-                var messageToSend = $"{nominee.TotalVotes} - {string.Format("{0:P2}", percentOfVote)}";
+                var percentOfVote = "0";
+                if (nominee.NomineeName.ToLower() != "present")
+                {
+                    percentOfVote = string.Format("{0:P2}", nominee.TotalVotes / totalVotes);
+                }
+                var messageToSend = $"{nominee.TotalVotes} - {percentOfVote}";
                 embedBuilder.AddField($"{nominee.NomineeName}", messageToSend, true);
             }
             await ctx.RespondAsync(embedBuilder.Build());
