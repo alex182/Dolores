@@ -31,6 +31,7 @@ namespace Dolores.Commands.NytSpeaker
         private async Task GetAndPrintLatestVotes(CommandContext ctx)
         {
             float lastVotes = 0;
+            DiscordMessage discordMessage = null;
             do
             {
                 await ctx.TriggerTypingAsync();
@@ -69,8 +70,10 @@ namespace Dolores.Commands.NytSpeaker
                     var messageToSend = $"{nominee.TotalVotes} - {percentOfVote}";
                     embedBuilder.AddField($"{nominee.NomineeName}", messageToSend, true);
                 }
-                var discordMessage = await ctx.RespondAsync(embedBuilder.Build());
-
+                if (discordMessage == null || DateTimeOffset.Now.Subtract(discordMessage.CreationTimestamp) > new TimeSpan(0, 5, 0))
+                    discordMessage = await ctx.RespondAsync(embedBuilder.Build());
+                else
+                    discordMessage = await discordMessage.ModifyAsync(embedBuilder.Build());
                 lastVotes = totalVotes;
 
                 Thread.Sleep(new TimeSpan(0, 1, 0));
