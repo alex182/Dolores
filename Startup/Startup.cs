@@ -15,6 +15,8 @@ using Dolores.Commands.Sloganizer;
 using MQTTnet;
 using Dolores.Clients.Discord.Models;
 using Dolores.Commands.NytSpeaker;
+using Dolores.Clients.RocketLaunch.Models;
+using Dolores.Clients.RocketLaunch;
 
 namespace Dolores.Startup
 {
@@ -47,6 +49,16 @@ namespace Dolores.Startup
             if (string.IsNullOrEmpty(discordClientOptions.WebhookUrl))
                 throw new NullReferenceException(nameof(discordClientOptions.WebhookUrl));
 
+
+            var rocketLaunchLiveApiOptions = new RocketLaunchLiveAPIClientOptions()
+            {
+                ApiKey = Environment.GetEnvironmentVariable("RocketLaunchLiveAPIKey"),
+                BaseUrl = "https://fdo.rocketlaunch.live"
+            };
+
+            if (string.IsNullOrEmpty(rocketLaunchLiveApiOptions.ApiKey))
+                throw new NullReferenceException(nameof(rocketLaunchLiveApiOptions.ApiKey));
+
             var dsharpDiscordClientConfiguration = new DiscordConfiguration
             {
                 Token = discordKey,
@@ -75,6 +87,7 @@ namespace Dolores.Startup
                     .AddSingleton<ISloganizerOptions, SloganizerOptions>(provider => sloganizerOptions)
                     .AddSingleton<INytSpeakerOptions, NytSpeakerOptions>(provider => nytSpeakerOptions)
                     .AddTransient<MemeGenerator, MemeGenerator>()
+                    .AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions)
                     .AddSingleton<IUtility, Utility>()
                     .BuildServiceProvider()
             };
