@@ -14,6 +14,7 @@ namespace Dolores.Commands.NytSpeaker
 {
     public class NytSpeakerCommand : BaseCommandModule
     {
+        private static bool isRunning = false;
         private readonly IUtility _utility;
 
         public NytSpeakerCommand(IUtility utility)
@@ -25,7 +26,11 @@ namespace Dolores.Commands.NytSpeaker
         [Description("Gets the current Speaker Of The House Vote")]
         public async Task GetCurrentVote(CommandContext ctx)
         {
-            await GetAndPrintLatestVotes(ctx);
+            if (!isRunning)
+            {
+                isRunning = true;
+                await GetAndPrintLatestVotes(ctx);
+            }
         }
 
         private async Task GetAndPrintLatestVotes(CommandContext ctx)
@@ -38,7 +43,9 @@ namespace Dolores.Commands.NytSpeaker
 
                 var votesJson = await _utility.GetVote();
                 var deserialized = JsonConvert.DeserializeObject<List<NytSpeakerResponse>>(votesJson);
-                var mostRecent = deserialized[deserialized.Count - 1];
+                NytSpeakerResponse? mostRecent = deserialized?.Last();
+                if (mostRecent == null)
+                    break;
 
                 float totalVotes = 0;
                 var nominees = new List<VoteCount>();
@@ -79,6 +86,8 @@ namespace Dolores.Commands.NytSpeaker
                 Thread.Sleep(new TimeSpan(0, 1, 0));
 
             } while (lastVotes > 0);
+
+            isRunning= false;
         }
     }
 }
