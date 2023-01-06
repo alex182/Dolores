@@ -65,7 +65,7 @@ namespace Dolores.Commands.NytSpeaker
                     nominees.Add(nomineeToAdd);
                 }
 
-                if (lastVotes == totalVotes) break;
+                if (lastVotes == totalVotes)  break;
 
                 foreach (var nominee in nominees)
                 {
