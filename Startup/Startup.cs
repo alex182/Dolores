@@ -88,6 +88,8 @@ namespace Dolores.Startup
                     .AddSingleton<INytSpeakerOptions, NytSpeakerOptions>(provider => nytSpeakerOptions)
                     .AddTransient<MemeGenerator, MemeGenerator>()
                     .AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions)
+                    .AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions)
+                    .AddSingleton<IDiscordClient, Clients.Discord.DiscordClient>()
                     .AddSingleton<IUtility, Utility>()
                     .BuildServiceProvider()
             };
@@ -96,8 +98,6 @@ namespace Dolores.Startup
            services
                 .AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient)
                 .AddSingleton<CommandsNextConfiguration, CommandsNextConfiguration>(provider => dsharpCommandConfiguration)
-                .AddSingleton<IDiscordClientOptions,DiscordClientOptions>(provider => discordClientOptions)
-                .AddSingleton<IDiscordClient, Clients.Discord.DiscordClient>()
                 .BuildServiceProvider();
 
         }

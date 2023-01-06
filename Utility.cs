@@ -1,4 +1,9 @@
-﻿using Dolores.Commands.NytSpeaker;
+﻿using Dolores.Clients.Discord.Models;
+using Dolores.Clients.Discord.Models.DiscordWebhookMessage;
+using Dolores.Clients.Models;
+using Dolores.Clients.RocketLaunch;
+using Dolores.Clients.RocketLaunch.Models.RocketLaunchLive.Response;
+using Dolores.Commands.NytSpeaker;
 using Dolores.Commands.NytSpeaker.Model;
 using Dolores.Commands.Sloganizer;
 using Dolores.Models.InsultApi;
@@ -20,12 +25,17 @@ namespace Dolores
         private HttpClient _httpClient;
         private readonly ISloganizerOptions _sloganizerOptions;
         private readonly INytSpeakerOptions _nytSpeakerOptions;
+        private readonly IRocketLaunchLiveAPIClientOptions _rocketLaunchLiveAPIClientOptions;
+        private readonly IDiscordClientOptions _discordClientOptions;
 
-        public Utility(HttpClient httpClient, ISloganizerOptions sloganizerOptions, INytSpeakerOptions nytSpeakerOptions)
+        public Utility(HttpClient httpClient, ISloganizerOptions sloganizerOptions, INytSpeakerOptions nytSpeakerOptions, IRocketLaunchLiveAPIClientOptions rocketLaunchLiveAPIClientOptions,
+            IDiscordClientOptions discordClientOptions)
         {
             _httpClient = httpClient;
             _sloganizerOptions= sloganizerOptions;
             _nytSpeakerOptions = nytSpeakerOptions;
+            _rocketLaunchLiveAPIClientOptions = rocketLaunchLiveAPIClientOptions;
+            _discordClientOptions = discordClientOptions;
         }
 
         public async Task<string> GetLastMessageAsync(CommandContext ctx, DiscordMember member)
@@ -115,5 +125,123 @@ namespace Dolores
 
             return body;
         }
+
+        public async Task<APIResultsWrapper<ResponseBody>> GetLaunches()
+        {
+            var now = DateTime.UtcNow;
+            var tomorrow = now.AddDays(1);
+
+            var afterDate = $"{now.Year}-{now.Month}-{now.Day}";
+            var beforeDate = $"{tomorrow.Year}-{tomorrow.Month}-{tomorrow.Day}";
+
+            _httpClient.DefaultRequestHeaders.Accept.Clear();
+            var result = await _httpClient.GetAsync($"{_rocketLaunchLiveAPIClientOptions.BaseUrl}/json/launches?key={_rocketLaunchLiveAPIClientOptions.ApiKey}" +
+                $"&after_date={afterDate}&before_date{beforeDate}");
+
+            if (!result.IsSuccessStatusCode)
+            {
+                return new APIResultsWrapper<ResponseBody>
+                {
+                    IsSuccessStatusCode = result.IsSuccessStatusCode,
+                    StatusCode = result.StatusCode
+                };
+            }
+
+            var body = await result.Content.ReadAsStringAsync();
+            var response = JsonConvert.DeserializeObject<ResponseBody>(body);
+
+            return new APIResultsWrapper<ResponseBody>
+            {
+                Result = response,
+                IsSuccessStatusCode = result.IsSuccessStatusCode,
+                StatusCode = result.StatusCode
+            };
+        }
+
+        public async Task SendLaunchNotification(ResponseBody launchInfo)
+        {
+            Console.WriteLine($"{JsonConvert.SerializeObject(launchInfo)}");
+
+            var message = new DiscordWebhookMessage()
+            {
+                content = "Launch Notification 🚀"
+            };
+            foreach (var launch in launchInfo.Result.Take(10))
+            {
+                var embed = new Embed();
+                embed.title = launch.Name;
+                embed.color = 5814783;
+                embed.description = launch.Mission_Description;
+
+                var today = DateTimeOffset.Now.Date;
+                var tomorrow = today.AddDays(1);
+                var convertedLaunchDate = DateTimeOffset.FromUnixTimeSeconds(int.Parse(launch.Sort_Date));
+
+                if (convertedLaunchDate.Date != tomorrow || convertedLaunchDate.Date != tomorrow)
+                {
+                    continue;
+                }
+
+                embed.fields.Add(new Field
+                {
+                    name = "Provider",
+                    value = launch.Provider.Name
+                });
+
+                embed.fields.Add(new Field
+                {
+                    name = "Launch Date",
+                    value = convertedLaunchDate.ToString()
+                });
+
+                embed.fields.Add(new Field
+                {
+                    name = "Vehicle",
+                    value = launch.Vehicle.Name
+                });
+
+                foreach (var mission in launch.Missions)
+                {
+                    var missionCount = launch.Missions.IndexOf(mission) + 1;
+                    embed.fields.Add(new Field
+                    {
+                        name = $"Mission {missionCount}",
+                        value = mission.Name
+                    });
+                }
+
+                embed.fields.Add(new Field
+                {
+                    name = "Launch Location",
+                    value = launch.Pad.Location.Name
+                });
+
+                embed.fields.Add(new Field
+                {
+                    name = "Description",
+                    value = launch.Quicktext
+                });
+
+                message.embeds.Add(embed);
+            }
+
+            if (!message.embeds.Any())
+            {
+                message.content = "No launches within the next 24 hours";
+            }
+
+            using StringContent content = new StringContent(JsonConvert.SerializeObject(message), Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(_discordClientOptions.WebhookUrl),
+                Content = content
+            };
+
+
+            var psotresp = await _httpClient.SendAsync(request);
+        }
+
     }
 }

@@ -18,6 +18,7 @@ using Dolores.Clients.RocketLaunch.Models.RocketLaunchLive.Response;
 using Newtonsoft.Json;
 using Dolores.Clients.Discord.Models.DiscordWebhookMessage;
 using Dolores.Commands.NytSpeaker;
+using Dolores.Commands.Space;
 
 namespace Dolores.Clients.Discord
 {
@@ -49,6 +50,7 @@ namespace Dolores.Clients.Discord
             _commands.RegisterCommands<MockCommand>();
             _commands.RegisterCommands<SloganizerCommand>();
             _commands.RegisterCommands<NytSpeakerCommand>();
+            _commands.RegisterCommands<SpaceCommand>();
             //_commands.RegisterCommands<TimeoutRoulette>();
             _commands.SetHelpFormatter<MockingFormatter>();
 

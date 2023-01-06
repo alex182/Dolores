@@ -1,4 +1,6 @@
-﻿using Dolores.Commands.NytSpeaker.Model;
+﻿using Dolores.Clients.Models;
+using Dolores.Clients.RocketLaunch.Models.RocketLaunchLive.Response;
+using Dolores.Commands.NytSpeaker.Model;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 
@@ -11,5 +13,7 @@ namespace Dolores
         string Sarcastify(string word);
         Task<string> GetSlogan(string sloganWord);
         Task<string>GetVote();
+        Task<APIResultsWrapper<ResponseBody>> GetLaunches();
+        Task SendLaunchNotification(ResponseBody launchInfo);
     }
 }
