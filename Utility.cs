@@ -112,9 +112,7 @@ namespace Dolores
 
             response.EnsureSuccessStatusCode();
             var body = await response.Content.ReadAsStringAsync();
-            //var cleaned = body.Replace(@"\""", @"""");
 
-            //var deserializedResponse  = JsonConvert.DeserializeObject<Root>(cleaned);
             return body;
         }
     }
