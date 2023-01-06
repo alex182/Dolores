@@ -37,20 +37,32 @@ namespace Dolores.Commands.NytSpeaker
         {
             float lastVotes = 0;
             DiscordMessage discordMessage = null;
+
+            await ctx.TriggerTypingAsync();
+
+            var votesJson = await _utility.GetVote();
+            var deserialized = JsonConvert.DeserializeObject<List<NytSpeakerResponse>>(votesJson);
+            NytSpeakerResponse? mostRecent = deserialized?.Last();
+            if (mostRecent == null)
+                return;
+
+            var embedBuilder = new DiscordEmbedBuilder();
+            embedBuilder.Title = $"Round: {mostRecent.vote_round}";
+
+            if (!mostRecent.has_votes)
+            {
+                embedBuilder.AddField(":poop:", "Voting hasn't started yet");
+                await ctx.RespondAsync(embedBuilder.Build());
+            }
+
             do
             {
-                await ctx.TriggerTypingAsync();
-
-                var votesJson = await _utility.GetVote();
-                var deserialized = JsonConvert.DeserializeObject<List<NytSpeakerResponse>>(votesJson);
-                NytSpeakerResponse? mostRecent = deserialized?.Last();
-                if (mostRecent == null)
+                if(!mostRecent.has_votes)
                     break;
 
                 float totalVotes = 0;
                 var nominees = new List<VoteCount>();
 
-                var embedBuilder = new DiscordEmbedBuilder();
                 embedBuilder.Title = $"Round: {mostRecent.vote_round}";
 
                 foreach (var nominee in mostRecent.values)
