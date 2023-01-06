@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dolores.Clients.HAMqtt.Models.RocketLaunchLive.Response
+namespace Dolores.Clients.RocketLaunch.Models.RocketLaunchLive.Response
 {
-    public class Mission
+    public class Pad
     {
         public int? Id { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
+        public Location? Location { get; set; }
     }
 }

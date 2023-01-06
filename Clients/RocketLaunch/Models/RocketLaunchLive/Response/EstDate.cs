@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace Dolores.Clients.HAMqtt.Models.RocketLaunchLive.Response
+namespace Dolores.Clients.RocketLaunch.Models.RocketLaunchLive.Response
 {
     public class EstDate
     {
