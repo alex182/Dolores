@@ -1,4 +1,5 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using Dolores.Commands.NytSpeaker.Model;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 
 namespace Dolores
@@ -9,5 +10,6 @@ namespace Dolores
         Task<string> RandomInsult(string name);
         string Sarcastify(string word);
         Task<string> GetSlogan(string sloganWord);
+        Task<string>GetVote();
     }
 }

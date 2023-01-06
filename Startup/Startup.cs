@@ -16,6 +16,7 @@ using Dolores.Clients.HAMqtt.Models;
 using Dolores.Clients.HAMqtt;
 using MQTTnet;
 using Dolores.Clients.Discord.Models;
+using Dolores.Commands.NytSpeaker;
 
 namespace Dolores.Startup
 {
@@ -80,7 +81,9 @@ namespace Dolores.Startup
             var sloganizerOptions = new SloganizerOptions()
             {
                 BaseUrl = "http://www.sloganizer.net"
-            }; 
+            };
+
+            var nytSpeakerOptions = new NytSpeakerOptions();
 
             var dsharpCommandConfiguration = new CommandsNextConfiguration
             {
@@ -89,6 +92,7 @@ namespace Dolores.Startup
                 EnableMentionPrefix = true,
                 Services = services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
                     .AddSingleton<ISloganizerOptions, SloganizerOptions>(provider => sloganizerOptions)
+                    .AddSingleton<INytSpeakerOptions, NytSpeakerOptions>(provider => nytSpeakerOptions)
                     .AddTransient<MemeGenerator, MemeGenerator>()
                     .AddSingleton<IUtility, Utility>()
                     .BuildServiceProvider()

@@ -19,6 +19,7 @@ using Dolores.Clients.HAMqtt.Models;
 using Dolores.Clients.HAMqtt.Models.RocketLaunchLive.Response;
 using Newtonsoft.Json;
 using Dolores.Clients.Discord.Models.DiscordWebhookMessage;
+using Dolores.Commands.NytSpeaker;
 
 namespace Dolores.Clients.Discord
 {
@@ -51,6 +52,7 @@ namespace Dolores.Clients.Discord
 
             _commands.RegisterCommands<MockCommand>();
             _commands.RegisterCommands<SloganizerCommand>();
+            _commands.RegisterCommands<NytSpeakerCommand>();
             //_commands.RegisterCommands<TimeoutRoulette>();
             _commands.SetHelpFormatter<MockingFormatter>();
 
@@ -74,7 +76,7 @@ namespace Dolores.Clients.Discord
 
                 SendLaunchNotification(output).GetAwaiter().GetResult();
 
-                return Task.Delay(60000);
+                return Task.Delay(172800000);
             };
 
             await Task.Delay(-1);
