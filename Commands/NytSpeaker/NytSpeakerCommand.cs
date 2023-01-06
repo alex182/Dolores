@@ -25,42 +25,57 @@ namespace Dolores.Commands.NytSpeaker
         [Description("Gets the current Speaker Of The House Vote")]
         public async Task GetCurrentVote(CommandContext ctx)
         {
-            await ctx.TriggerTypingAsync();
+            await GetAndPrintLatestVotes(ctx);
+        }
 
-            var message = await _utility.GetVote();
-            var deserialized = JsonConvert.DeserializeObject<List<NytSpeakerResponse>>(message);
-            var mostRecent = deserialized[deserialized.Count - 1];
-
-            float totalVotes = 0;
-            var nominees = new List<VoteCount>();
-
-            var embedBuilder = new DiscordEmbedBuilder();
-            embedBuilder.Title = $"Round: {mostRecent.vote_round}";
-
-            foreach (var nominee in mostRecent.values)
+        private async Task GetAndPrintLatestVotes(CommandContext ctx)
+        {
+            float lastVotes = 0;
+            do
             {
-                var nomineeToAdd = new VoteCount();
-                nomineeToAdd.NomineeName = nominee.key;
-                nomineeToAdd.TotalVotes = nominee.total;
+                await ctx.TriggerTypingAsync();
 
-                if(nominee.key.ToLower() != "present")
-                    totalVotes += nominee.total;
+                var votesJson = await _utility.GetVote();
+                var deserialized = JsonConvert.DeserializeObject<List<NytSpeakerResponse>>(votesJson);
+                var mostRecent = deserialized[deserialized.Count - 1];
 
-                nominees.Add(nomineeToAdd);
-            }
+                float totalVotes = 0;
+                var nominees = new List<VoteCount>();
 
-            foreach (var nominee in nominees)
-            {
-                var percentOfVote = "0";
-                if (nominee.NomineeName.ToLower() != "present")
+                var embedBuilder = new DiscordEmbedBuilder();
+                embedBuilder.Title = $"Round: {mostRecent.vote_round}";
+
+                foreach (var nominee in mostRecent.values)
                 {
-                    percentOfVote = string.Format("{0:P2}", nominee.TotalVotes / totalVotes);
-                }
-                var messageToSend = $"{nominee.TotalVotes} - {percentOfVote}";
-                embedBuilder.AddField($"{nominee.NomineeName}", messageToSend, true);
-            }
-            await ctx.RespondAsync(embedBuilder.Build());
+                    var nomineeToAdd = new VoteCount();
+                    nomineeToAdd.NomineeName = nominee.key;
+                    nomineeToAdd.TotalVotes = nominee.total;
 
+                    if (nominee.key.ToLower() != "present")
+                        totalVotes += nominee.total;
+
+                    nominees.Add(nomineeToAdd);
+                }
+
+                if (lastVotes == totalVotes) break;
+
+                foreach (var nominee in nominees)
+                {
+                    var percentOfVote = "0";
+                    if (nominee.NomineeName.ToLower() != "present")
+                    {
+                        percentOfVote = string.Format("{0:P2}", nominee.TotalVotes / totalVotes);
+                    }
+                    var messageToSend = $"{nominee.TotalVotes} - {percentOfVote}";
+                    embedBuilder.AddField($"{nominee.NomineeName}", messageToSend, true);
+                }
+                var discordMessage = await ctx.RespondAsync(embedBuilder.Build());
+
+                lastVotes = totalVotes;
+
+                Thread.Sleep(new TimeSpan(0, 1, 0));
+
+            } while (lastVotes > 0);
         }
     }
 }
