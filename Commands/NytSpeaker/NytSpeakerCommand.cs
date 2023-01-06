@@ -43,7 +43,9 @@ namespace Dolores.Commands.NytSpeaker
 
                 var votesJson = await _utility.GetVote();
                 var deserialized = JsonConvert.DeserializeObject<List<NytSpeakerResponse>>(votesJson);
-                var mostRecent = deserialized[deserialized.Count - 1];
+                NytSpeakerResponse? mostRecent = deserialized?.Last();
+                if (mostRecent == null)
+                    break;
 
                 float totalVotes = 0;
                 var nominees = new List<VoteCount>();
