@@ -31,38 +31,29 @@ namespace Dolores.Commands.NytSpeaker
             var deserialized = JsonConvert.DeserializeObject<List<NytSpeakerResponse>>(message);
             var mostRecent = deserialized[deserialized.Count - 1];
 
+            float totalVotes = 0;
+            var nominees = new List<VoteCount>();
+
+            var embedBuilder = new DiscordEmbedBuilder();
+            embedBuilder.Title = $"Round: {mostRecent.vote_round}";
+
             foreach (var nominee in mostRecent.values)
             {
-                var embedBuilder = new DiscordEmbedBuilder();
-                embedBuilder.Title = $"Round: {mostRecent.vote_round}";
+                var nomineeToAdd = new VoteCount();
+                nomineeToAdd.NomineeName = nominee.key;
+                nomineeToAdd.TotalVotes = nominee.total;
+                totalVotes += nominee.total;
 
-                var republicanVotes = 0;
-                var democratVotes = 0;
-                var otherVotes = 0;
-
-                foreach (var votes in nominee.values)
-                {
-                    if (votes.key.ToLower() == "d")
-                    {
-                        democratVotes = votes.value;
-                    }
-                    else if (votes.key.ToLower() == "r")
-                    {
-                        republicanVotes = votes.value;
-                    }
-                    else
-                    {
-                        otherVotes += votes.value;
-                    }
-
-                    embedBuilder.AddField("Nominee", nominee.key, true);
-                    embedBuilder.AddField("Democrat Votes", democratVotes.ToString(), true);
-                    embedBuilder.AddField("Republican Votes", republicanVotes.ToString(), true);
-                    embedBuilder.AddField("Other Votes", otherVotes.ToString(), true);
-                    embedBuilder.AddField("Total Votes", nominee.total.ToString(), true);
-                    await ctx.RespondAsync(embedBuilder.Build());
-                }
+                nominees.Add(nomineeToAdd);
             }
+
+            foreach (var nominee in nominees)
+            {
+                float percentOfVote = nominee.TotalVotes/totalVotes;
+                var messageToSend = $"{nominee.TotalVotes} - {string.Format("{0:P2}", percentOfVote)}";
+                embedBuilder.AddField($"{nominee.NomineeName}", messageToSend, true);
+            }
+            await ctx.RespondAsync(embedBuilder.Build());
 
         }
     }
