@@ -12,8 +12,6 @@ using Microsoft.Extensions.Logging;
 using Dolores.Clients.Discord;
 using Dolores.Commands.Mocking;
 using Dolores.Commands.Sloganizer;
-using Dolores.Clients.HAMqtt.Models;
-using Dolores.Clients.HAMqtt;
 using MQTTnet;
 using Dolores.Clients.Discord.Models;
 using Dolores.Commands.NytSpeaker;
@@ -48,23 +46,6 @@ namespace Dolores.Startup
 
             if (string.IsNullOrEmpty(discordClientOptions.WebhookUrl))
                 throw new NullReferenceException(nameof(discordClientOptions.WebhookUrl));
-
-            var launchMqttOptions = new LaunchMqttOptions()
-            {
-                Username = Environment.GetEnvironmentVariable("mqttUserName"),
-                Password = Environment.GetEnvironmentVariable("mqttPassword"),
-                BaseAddress = Environment.GetEnvironmentVariable("mqttAddress"),
-                Topic = "/Bard/Launch"
-            };
-
-            if (string.IsNullOrEmpty(launchMqttOptions.Username))
-                throw new NullReferenceException(nameof(launchMqttOptions.Username));
-
-            if (string.IsNullOrEmpty(launchMqttOptions.Password))
-                throw new NullReferenceException(nameof(launchMqttOptions.Password));
-
-            if (string.IsNullOrEmpty(launchMqttOptions.BaseAddress))
-                throw new NullReferenceException(nameof(launchMqttOptions.BaseAddress));
 
             var dsharpDiscordClientConfiguration = new DiscordConfiguration
             {
@@ -102,9 +83,6 @@ namespace Dolores.Startup
            services
                 .AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient)
                 .AddSingleton<CommandsNextConfiguration, CommandsNextConfiguration>(provider => dsharpCommandConfiguration)
-                .AddSingleton<LaunchMqttOptions, LaunchMqttOptions>(provider => launchMqttOptions)
-                .AddSingleton<MqttFactory, MqttFactory>(provider => new MqttFactory())
-                .AddSingleton<LaunchMqttClient, LaunchMqttClient>()
                 .AddSingleton<IDiscordClientOptions,DiscordClientOptions>(provider => discordClientOptions)
                 .AddSingleton<IDiscordClient, Clients.Discord.DiscordClient>()
                 .BuildServiceProvider();
