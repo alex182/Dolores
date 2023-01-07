@@ -126,17 +126,17 @@ namespace Dolores
             return body;
         }
 
-        public async Task<APIResultsWrapper<ResponseBody>> GetLaunches()
+        public async Task<APIResultsWrapper<ResponseBody>> GetLaunches(DateTime? startDate , DateTime? endDate)
         {
-            var now = DateTime.UtcNow;
-            var tomorrow = now.AddDays(1);
+            var now = startDate ?? DateTime.UtcNow;
+            var tomorrow = endDate ?? now.AddDays(1);
 
-            var afterDate = $"{now.Year}-{now.Month}-{now.Day}";
-            var beforeDate = $"{tomorrow.Year}-{tomorrow.Month}-{tomorrow.Day}";
+            var afterDate = now.ToString("yyyy-MM-dd");
+            var beforeDate = tomorrow.ToString("yyyy-MM-dd");
 
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             var result = await _httpClient.GetAsync($"{_rocketLaunchLiveAPIClientOptions.BaseUrl}/json/launches?key={_rocketLaunchLiveAPIClientOptions.ApiKey}" +
-                $"&after_date={afterDate}&before_date{beforeDate}");
+                $"&after_date={afterDate}&before_date={beforeDate}");
 
             if (!result.IsSuccessStatusCode)
             {
@@ -173,14 +173,7 @@ namespace Dolores
                 embed.color = 5814783;
                 embed.description = launch.Mission_Description;
 
-                var today = DateTimeOffset.Now.Date;
-                var tomorrow = today.AddDays(1);
                 var convertedLaunchDate = DateTimeOffset.FromUnixTimeSeconds(int.Parse(launch.Sort_Date));
-
-                if (convertedLaunchDate.Date != tomorrow || convertedLaunchDate.Date != tomorrow)
-                {
-                    continue;
-                }
 
                 embed.fields.Add(new Field
                 {
