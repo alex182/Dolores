@@ -6,6 +6,9 @@ FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
 WORKDIR /app
 ENV DiscordKey="<KEY HERE>"
 ENV DiscordBotCommandPrefix="<Prefix here>"
+ENV DiscordWebhookUrl="<WEBHOOK URL HERE>"
+ENV RocketLaunchLiveAPIKey="<KEY HERE>"
+
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
