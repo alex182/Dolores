@@ -3,6 +3,8 @@
 
 
 FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
+RUN apt-get update && apt-get install -y apt-utils libgdiplus libc6-dev
+
 WORKDIR /app
 ENV DiscordKey="<KEY HERE>"
 ENV DiscordBotCommandPrefix="<Prefix here>"
