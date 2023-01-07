@@ -13,7 +13,7 @@ namespace Dolores
         string Sarcastify(string word);
         Task<string> GetSlogan(string sloganWord);
         Task<string>GetVote();
-        Task<APIResultsWrapper<ResponseBody>> GetLaunches();
+        Task<APIResultsWrapper<ResponseBody>> GetLaunches(DateTime? startDate, DateTime? endDate);
         Task SendLaunchNotification(ResponseBody launchInfo);
     }
 }

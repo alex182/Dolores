@@ -17,6 +17,8 @@ using Dolores.Clients.Discord.Models;
 using Dolores.Commands.NytSpeaker;
 using Dolores.Clients.RocketLaunch.Models;
 using Dolores.Clients.RocketLaunch;
+using Dolores.BackgroundJobs.Space.RocketLaunchLive;
+using Microsoft.Extensions.Hosting;
 
 namespace Dolores.Startup
 {
@@ -91,6 +93,7 @@ namespace Dolores.Startup
                     .AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions)
                     .AddSingleton<IDiscordClient, Clients.Discord.DiscordClient>()
                     .AddSingleton<IUtility, Utility>()
+                    .AddHostedService<RocketLaunchLiveJob>()
                     .BuildServiceProvider()
             };
 
@@ -102,10 +105,10 @@ namespace Dolores.Startup
 
         }
 
-        public void Configure(IApplicationBuilder app,IDiscordClient discordClient)
+        public void Configure(IApplicationBuilder app,IDiscordClient discordClient, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
         {
             //wrong way to do this
-            discordClient.RunBotAsync().GetAwaiter().GetResult();
+            discordClient.RunBotAsync();
         }
     }    
 }
