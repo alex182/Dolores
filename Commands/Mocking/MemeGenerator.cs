@@ -16,7 +16,7 @@ namespace Dolores.Commands.Mocking
 
             using (Graphics graphics = Graphics.FromImage(bitmap))
             {
-                using (Font arialFont = new Font("Serif", 72, FontStyle.Bold))
+                using (Font arialFont = new Font("GenericSansSerif", 72, FontStyle.Bold))
                 {
                     graphics.DrawString(topText, arialFont, Brushes.White, firstLocation);
                     graphics.DrawString(bottomText, arialFont, Brushes.White, secondLocation);
@@ -29,7 +29,7 @@ namespace Dolores.Commands.Mocking
                     FontFamily.GenericSansSerif,
                     (int)FontStyle.Bold,
                     graphics.DpiY * 72 / 72,
-                    new Point(10, 10),
+                    new Point(10, 5),
                     new StringFormat());
 
                 p.AddString(

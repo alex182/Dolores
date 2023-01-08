@@ -91,7 +91,6 @@ namespace Dolores.Startup
                 .AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient)
                 .AddSingleton<CommandsNextConfiguration, CommandsNextConfiguration>(provider => dsharpCommandConfiguration)
                 .BuildServiceProvider();
-
         }
 
         public void Configure(IApplicationBuilder app,IDiscordClient discordClient, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
