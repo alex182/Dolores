@@ -6,11 +6,11 @@ FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
 RUN apt-get update && apt-get install -y apt-utils libgdiplus libc6-dev
 
 WORKDIR /app
-ENV DiscordKey="OTk5NDczODczMDY0MDM0MzQ1.GP_PVW.nz84EjZVTIvoxoKvK90esD0EQQk4YLONRa7_J0"
+ENV DiscordKey=""
 ENV DiscordBotCommandPrefix="!"
-ENV DiscordWebhookUrl="https://discord.com/api/webhooks/1028341262270603284/AT-M7CHuusD4OC5-hGvfPmuKeVAxZA0T4chQyGbllBgwuFf-96jFW8pnmBLh9sag6Fw4"
-ENV RocketLaunchLiveAPIKey="08c6671f-3954-4143-94a5-6ea626f0f09f"
-ENV NasaAPIKey="bQ4DOE7bU4rB2PQeWHd9xaX72AaQr5tmLPGoJYSX"
+ENV DiscordWebhookUrl=""
+ENV RocketLaunchLiveAPIKey=""
+ENV NasaAPIKey=""
 
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
