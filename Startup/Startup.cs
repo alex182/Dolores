@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -12,9 +7,7 @@ using Microsoft.Extensions.Logging;
 using Dolores.Clients.Discord;
 using Dolores.Commands.Mocking;
 using Dolores.Commands.Sloganizer;
-using MQTTnet;
 using Dolores.Clients.Discord.Models;
-using Dolores.Commands.NytSpeaker;
 using Dolores.Clients.RocketLaunch.Models;
 using Dolores.Clients.RocketLaunch;
 using Dolores.BackgroundJobs.Space.RocketLaunchLive;
@@ -89,8 +82,6 @@ namespace Dolores.Startup
                 BaseUrl = "http://www.sloganizer.net"
             };
 
-            var nytSpeakerOptions = new NytSpeakerOptions();
-
             var dsharpCommandConfiguration = new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { commandPrefix },
@@ -98,7 +89,6 @@ namespace Dolores.Startup
                 EnableMentionPrefix = true,
                 Services = services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
                     .AddSingleton<ISloganizerOptions, SloganizerOptions>(provider => sloganizerOptions)
-                    .AddSingleton<INytSpeakerOptions, NytSpeakerOptions>(provider => nytSpeakerOptions)
                     .AddTransient<MemeGenerator, MemeGenerator>()
                     .AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions)
                     .AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions)
