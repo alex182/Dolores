@@ -1,6 +1,7 @@
 ﻿using Dolores.Clients.Discord.Models;
 using Dolores.Clients.Discord.Models.DiscordWebhookMessage;
 using Dolores.Clients.Models;
+using Dolores.Clients.Nasa.Models;
 using Dolores.Clients.RocketLaunch;
 using Dolores.Clients.RocketLaunch.Models.RocketLaunchLive.Response;
 using Dolores.Commands.Sloganizer;
@@ -24,6 +25,7 @@ namespace Dolores
         private readonly ISloganizerOptions _sloganizerOptions;
         private readonly IRocketLaunchLiveAPIClientOptions _rocketLaunchLiveAPIClientOptions;
         private readonly IDiscordClientOptions _discordClientOptions;
+        private readonly INasaOptions _nasaOptions;
 
         public Utility(HttpClient httpClient, ISloganizerOptions sloganizerOptions, IRocketLaunchLiveAPIClientOptions rocketLaunchLiveAPIClientOptions,
             IDiscordClientOptions discordClientOptions)
@@ -143,8 +145,6 @@ namespace Dolores
 
         public async Task SendLaunchNotification(ResponseBody launchInfo)
         {
-            Console.WriteLine($"{JsonConvert.SerializeObject(launchInfo)}");
-
             var message = new DiscordWebhookMessage()
             {
                 content = "Launch Notification 🚀"
@@ -219,5 +219,39 @@ namespace Dolores
             var psotresp = await _httpClient.SendAsync(request);
         }
 
+        public async Task SendApod(APODResponse apod)
+        {
+            if (string.IsNullOrEmpty(apod.url) || string.IsNullOrEmpty(apod.explanation) || string.IsNullOrEmpty(apod.title))
+            {
+                return;
+            }
+
+            var message = new DiscordWebhookMessage()
+            {
+                content = "Astrophotograph Of the Day 🌚"
+            };
+
+            var embed = new Embed();
+            embed.title = apod.title;
+            embed.description = apod.explanation;
+            embed.image = new Image 
+            { 
+                url = apod.hdurl
+            };
+
+            message.embeds.Add(embed);
+
+            using StringContent content = new StringContent(JsonConvert.SerializeObject(message), Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(_discordClientOptions.WebhookUrl),
+                Content = content
+            };
+
+
+            var psotresp = await _httpClient.SendAsync(request);
+        }
     }
 }
