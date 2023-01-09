@@ -1,4 +1,5 @@
 ﻿using Dolores.Clients.Models;
+using Dolores.Clients.Nasa.Models;
 using Dolores.Clients.RocketLaunch.Models.RocketLaunchLive.Response;
 using Dolores.Commands.NytSpeaker.Model;
 using DSharpPlus.CommandsNext;
@@ -15,5 +16,6 @@ namespace Dolores
         Task<string>GetVote();
         Task<APIResultsWrapper<ResponseBody>> GetLaunches(DateTime? startDate, DateTime? endDate);
         Task SendLaunchNotification(ResponseBody launchInfo);
+        Task SendApod(APODResponse message);
     }
 }

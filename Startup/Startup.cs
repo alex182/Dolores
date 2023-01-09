@@ -19,6 +19,9 @@ using Dolores.Clients.RocketLaunch.Models;
 using Dolores.Clients.RocketLaunch;
 using Dolores.BackgroundJobs.Space.RocketLaunchLive;
 using Microsoft.Extensions.Hosting;
+using Dolores.Clients.Nasa.Models;
+using Dolores.Clients.Nasa;
+using Dolores.BackgroundJobs.Space.NasasAPOD;
 
 namespace Dolores.Startup
 {
@@ -70,6 +73,14 @@ namespace Dolores.Startup
                 MinimumLogLevel = LogLevel.Debug,
             };
 
+            var nasaApiOptions = new NasaOptions()
+            {
+                ApiKey = Environment.GetEnvironmentVariable("NasaAPIKey"),
+            };
+
+            if (string.IsNullOrEmpty(nasaApiOptions.ApiKey))
+                throw new NullReferenceException(nameof(nasaApiOptions.ApiKey));
+
             var dsharpClient = new DSharpPlus.DiscordClient(dsharpDiscordClientConfiguration);
 
             var httpClient = new HttpClient();
@@ -93,6 +104,9 @@ namespace Dolores.Startup
                     .AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions)
                     .AddSingleton<IDiscordClient, Clients.Discord.DiscordClient>()
                     .AddSingleton<IUtility, Utility>()
+                    .AddSingleton<INasaOptions, NasaOptions>(provider => nasaApiOptions)
+                    .AddSingleton<INasaClient, NasaClient>()
+                    .AddHostedService<APODJob>()
                     .AddHostedService<RocketLaunchLiveJob>()
                     .BuildServiceProvider()
             };
