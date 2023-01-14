@@ -1,6 +1,9 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-
+#Build/Push to registry
+ #docker build -t dolores .
+ #docker image tag dolores 192.168.1.136:9005/dolores:latest
+ #docker image push 192.168.1.136:9005/dolores:latest
 
 FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
 RUN apt-get update && apt-get install -y apt-utils libgdiplus libc6-dev
