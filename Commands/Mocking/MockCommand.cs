@@ -1,77 +1,134 @@
-﻿using DSharpPlus;
+﻿using Dolores.Models.InsultApi;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Dolores.Commands.Mocking
 {
-    public class MockCommand : BaseCommandModule
+    public class MockCommand : ApplicationCommandModule
     {
-        private readonly IUtility _utility;
         private MemeGenerator _memeGenerator;
+        private HttpClient _httpClient;
 
-        public MockCommand(IUtility utility, MemeGenerator memeGenerator)
+        public MockCommand(MemeGenerator memeGenerator, HttpClient httpClient)
         {
-            _utility = utility;
             _memeGenerator = memeGenerator;
+            _httpClient = httpClient;
         }
 
-        [Command("ping")] // let's define this method as a command
-        [Description("Example ping command")] // this will be displayed to tell users what this command does when they invoke help
-        [Aliases("pong")] // alternative names for the command
-        public async Task Ping(CommandContext ctx) // this command takes no arguments
+        [SlashCommand("mock", "Mocks the tagged person")]
+        public async Task Mock(InteractionContext ctx,[Option("memberName","Person to mock")] DiscordUser member)
         {
-            // let's trigger a typing indicator to let
-            // users know we're working
-            await ctx.TriggerTypingAsync();
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            // let's make the message a bit more colourful
-            var emoji = DiscordEmoji.FromName(ctx.Client, ":ping_pong:");
+            var message = await GetLastMessageAsync(ctx, member);
 
-            // respond with ping
-            await ctx.RespondAsync($"{emoji} Pong! Ping: {ctx.Client.Ping}ms");
-        }
-
-        [Command("mock")] // let's define this method as a command
-        [Description("Mocks the tagged person")] // this will be displayed to tell users what this command does when they invoke help
-        [Aliases("youSuck")] // alternative names for the command
-        public async Task Mock(CommandContext ctx, DiscordMember member)
-        {
-            await ctx.TriggerTypingAsync();
-            var message = await _utility.GetLastMessageAsync(ctx, member);
-
-            if (message == null)
+            if (string.IsNullOrEmpty(message))
             {
-                await ctx.RespondAsync($"Couldn't find a message for {member.Mention}");
+                var response = new DiscordWebhookBuilder()
+                    .WithContent($"Couldn't find a message for {member.Mention}");
+
+                await ctx.EditResponseAsync(response);
+                return;
             }
 
-            var sarcasticImage = _memeGenerator.CreateSpongeBob(_utility.Sarcastify(message));
-            var messageBuilder = new DiscordMessageBuilder();
+            var sarcasticImage = _memeGenerator.CreateSpongeBob(Sarcastify(message));
 
             using (FileStream fs = File.OpenRead(sarcasticImage))
             {
-                var messageToSend = messageBuilder
-                .WithFile(sarcasticImage, fs);
+                var messageToSend = new DiscordWebhookBuilder()
+                .AddFile(sarcasticImage, fs);
 
-                await ctx.RespondAsync(messageToSend);
+                await ctx.EditResponseAsync(messageToSend);
             }
         }
 
-        [Command("insult")] // let's define this method as a command
-        [Description("Mocks the tagged person")] // this will be displayed to tell users what this command does when they invoke help
-        [Aliases("youReallySuck")] // alternative names for the command
-        public async Task Insult(CommandContext ctx, DiscordMember member)
+        [SlashCommand("insult", "Insults the tagged person")]
+        public async Task Insult(InteractionContext ctx, [Option("memberName", "Person to mock")] DiscordUser member)
         {
-            await ctx.TriggerTypingAsync();
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var insult = await _utility.RandomInsult(member.DisplayName);
+            var castMember = (DiscordMember)member;
+            var insult = await RandomInsult(castMember.DisplayName);
 
-            await ctx.RespondAsync($"{member.Mention} {insult}");
+
+            var messageToSend = new DiscordWebhookBuilder()
+                .WithContent(insult);
+
+            await ctx.EditResponseAsync(messageToSend);
         }
+
+        internal async Task<string> GetLastMessageAsync(InteractionContext ctx, DiscordUser member)
+        {
+            var messages = await ctx.Channel.GetMessagesAsync(100);
+            messages = messages.ToList();
+            return messages.Where(message => message.Author.Id.Equals(member.Id))?.FirstOrDefault(message => message.Content != ".")?.Content;
+        }
+        internal string Sarcastify(string word)
+        {
+            if(string.IsNullOrEmpty(word)) return "";
+            word = word.ToLower();
+            var newWord = "";
+            for (var i = 0; i < word.Length; i++)
+            {
+                var letter = word[i];
+                if (i % 2 == 0)
+                {
+                    letter = Char.ToUpper(letter);
+                }
+
+                newWord += letter;
+            }
+
+            newWord += " ";
+
+            return newWord;
+        }
+
+        internal async Task<string> RandomInsult(string name)
+        {
+            string insult = "";
+
+            try
+            {
+                var insultFromApi = await GetInsult(name);
+                insult = insultFromApi.insult;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception: {e.Message}");
+                return $"Api must be down... But HEY {name}, FUCK YOU BUDDY.";
+            }
+
+            return insult;
+        }
+
+        internal async Task<InsultApiResponse> GetInsult(string name)
+        {
+            var rand = new Random();
+            var nameRand = name + rand.Next(9999);
+            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https://evilinsult.com/generate_insult.php?lang=en&type=json&name={nameRand}"));
+            request.Headers.Accept.Clear();
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var body = await response.Content.ReadAsStringAsync();
+
+            body = body.Replace("&amp;", "&");
+
+            return JsonConvert.DeserializeObject<InsultApiResponse>(body);
+        }
+
+
     }
 }

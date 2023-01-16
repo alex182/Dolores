@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Dolores.Clients.Nasa.Models;
 using Dolores.Clients.Nasa;
 using Dolores.BackgroundJobs.Space.NasasAPOD;
+using Dolores.Commands.Yarn;
 
 namespace Dolores.Startup
 {
@@ -33,11 +34,6 @@ namespace Dolores.Startup
 
             if (string.IsNullOrEmpty(discordKey))
                 throw new ArgumentNullException(nameof(discordKey));
-
-            var commandPrefix = Environment.GetEnvironmentVariable("DiscordBotCommandPrefix");
-
-            if (string.IsNullOrEmpty(commandPrefix))
-                throw new ArgumentNullException(nameof(commandPrefix));
 
             var discordClientOptions = new DiscordClientOptions()
             {
@@ -84,12 +80,9 @@ namespace Dolores.Startup
 
             var dsharpCommandConfiguration = new CommandsNextConfiguration
             {
-                StringPrefixes = new[] { commandPrefix },
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 Services = services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
-                    .AddSingleton<ISloganizerOptions, SloganizerOptions>(provider => sloganizerOptions)
-                    .AddTransient<MemeGenerator, MemeGenerator>()
                     .AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions)
                     .AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions)
                     .AddSingleton<IDiscordClient, Clients.Discord.DiscordClient>()
@@ -103,6 +96,7 @@ namespace Dolores.Startup
 
 
            services
+                .AddSingleton<HttpClient, HttpClient>(provider => httpClient)
                 .AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient)
                 .AddSingleton<CommandsNextConfiguration, CommandsNextConfiguration>(provider => dsharpCommandConfiguration)
                 .BuildServiceProvider();

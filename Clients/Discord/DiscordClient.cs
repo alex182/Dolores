@@ -13,7 +13,13 @@ using DSharpPlus;
 using Dolores.Clients.Discord.Models;
 using DSharpPlus.CommandsNext.Exceptions;
 using Dolores.Commands.Sloganizer;
-
+using Dolores.Commands.Yarn;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.Interactivity;
+using System.Net.NetworkInformation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dolores.Clients.Discord
 {
@@ -22,7 +28,7 @@ namespace Dolores.Clients.Discord
         public readonly EventId BotEventId = new EventId(42, "Bot-Ex02");
         public DSharpPlus.DiscordClient _client { get; set; }
         public CommandsNextExtension _commands { get; set; }
-        private HttpClient _httpClient;
+        public SlashCommandsExtension _slashCommands { get; set; }
         private readonly IDiscordClientOptions _discordClientOptions;
 
         public DiscordClient(DSharpPlus.DiscordClient discordClient,
@@ -31,24 +37,47 @@ namespace Dolores.Clients.Discord
         {
             _discordClientOptions = discordClientOptions;
 
-            _httpClient = httpClient;
-
             _client = discordClient;
             _client.Ready += Client_Ready;
             _client.GuildAvailable += Client_GuildAvailable;
             _client.ClientErrored += Client_ClientError;
 
+            _client.UseInteractivity(new InteractivityConfiguration()
+            {
+                PollBehaviour = PollBehaviour.KeepEmojis,
+                Timeout = TimeSpan.FromSeconds(20)
+            });
+
+
+            var yarnOptions = new YarnCommandOptions();
+
+            var sloganizerOptions = new SloganizerOptions()
+            {
+                BaseUrl = "http://www.sloganizer.net"
+            };
+
+            _slashCommands = _client.UseSlashCommands(new SlashCommandsConfiguration
+            {
+                Services = new ServiceCollection()
+                .AddSingleton<HttpClient, HttpClient>(provider => httpClient)
+                .AddSingleton<IYarnCommandOptions, YarnCommandOptions>(provider => yarnOptions)
+                .AddSingleton<ISloganizerOptions, SloganizerOptions>(provider => sloganizerOptions)
+                .AddTransient<MemeGenerator, MemeGenerator>()
+                .BuildServiceProvider()
+            }); ;
+
             _commands = _client.UseCommandsNext(commandsNextConfiguration);
             _commands.CommandExecuted += Commands_CommandExecuted;
             _commands.CommandErrored += Commands_CommandErrored;
 
-            _commands.RegisterCommands<MockCommand>();
-            _commands.RegisterCommands<SloganizerCommand>();
+            //_commands.RegisterCommands<SloganizerCommand>();
             //_commands.RegisterCommands<SpaceCommand>();
             //_commands.RegisterCommands<TimeoutRoulette>();
-            _commands.SetHelpFormatter<MockingFormatter>();
+            //_commands.SetHelpFormatter<MockingFormatter>();
 
-            //wrong way to do this, but DSharp is...not great
+            _slashCommands.RegisterCommands<MockCommand>(guildId: 968181128504676372);
+            _slashCommands.RegisterCommands<SloganizerCommand>(guildId: 968181128504676372);
+            _slashCommands.RegisterCommands<YarnCommand>(guildId: 968181128504676372);
         }
 
         public async Task RunBotAsync()

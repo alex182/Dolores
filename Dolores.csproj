@@ -40,13 +40,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.3.0-nightly-01173" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.3.0-nightly-01173" />
+    <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-00002" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="5.0.0-nightly-00002" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-00002" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="5.0.0-nightly-00002" />
+    <PackageReference Include="HtmlAgilityPack.NetCore" Version="1.5.0.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
-    <PackageReference Include="MQTTnet" Version="4.1.1.318" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
 
