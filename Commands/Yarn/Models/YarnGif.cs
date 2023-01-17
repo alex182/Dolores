@@ -3,6 +3,6 @@
     public class YarnGif
     {
         public string GifLink { get; set; }
-        public string Caption { get; set; }
+        public string ID { get; set; }
     }
 }

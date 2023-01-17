@@ -9,6 +9,7 @@ using DSharpPlus.SlashCommands;
 using HtmlAgilityPack;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 using System.Net.Http;
 using System.Xml;
 using System.Xml.Linq;
@@ -50,27 +51,29 @@ namespace Dolores.Commands.Yarn
 
                 var buttonId = gifs.IndexOf(gif).ToString();
                 var buttonLabel = gifs.IndexOf(gif) + 1;
-                var button = new DiscordButtonComponent(ButtonStyle.Primary, customId: buttonId, label: buttonLabel.ToString());
+                var button = new DiscordButtonComponent(ButtonStyle.Primary, customId: gif.ID, label: buttonLabel.ToString());
 
                 buttons.Add(button);
             }
-       
+
             var gifResponse = new DiscordWebhookBuilder()
                .AddComponents(buttons)
                .AddEmbeds(embeds);
 
-
             var interactivity = interactionContext.Client.GetInteractivity();
-             interactionContext.Client.ComponentInteractionCreated += async (s,e) => 
-             {
-                 var gifLinkIndex = Int32.Parse(e.Id);
-                 var embed = new DiscordEmbedBuilder()
-                    .WithImageUrl(gifs[gifLinkIndex].GifLink);
+             interactionContext.Client.ComponentInteractionCreated += async (s,e) =>
+             {          
+                var gifToSend = gifs.FirstOrDefault(g => g.ID == e.Id);
+                if (gifToSend != null)
+                {
+                    var embed = new DiscordEmbedBuilder()
+                    .WithImageUrl(gifToSend.GifLink);
 
-                 var messageBuilder = new DiscordFollowupMessageBuilder()
+                    var messageBuilder = new DiscordFollowupMessageBuilder()
                     .AddEmbed(embed);
 
-                 await interactionContext.FollowUpAsync(messageBuilder);
+                    await interactionContext.FollowUpAsync(messageBuilder);
+                }           
              };
 
             await interactionContext.EditResponseAsync(gifResponse);
@@ -120,7 +123,8 @@ namespace Dolores.Commands.Yarn
 
                     var gif = new YarnGif()
                     {
-                        GifLink = builtUrl
+                        GifLink = builtUrl,
+                        ID = Guid.NewGuid().ToString()
                     };
 
                     gifs.Add(gif);
