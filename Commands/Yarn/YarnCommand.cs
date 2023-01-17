@@ -41,7 +41,6 @@ namespace Dolores.Commands.Yarn
             var buttons = new List<DiscordButtonComponent>();
             var builder = new DiscordFollowupMessageBuilder();
             var embeds = new List<DiscordEmbed>();
-            var responseId = Guid.NewGuid();
 
             foreach (var gif in gifs.Take(5))
             {
