@@ -21,10 +21,9 @@ var lokiIP = "192.168.1.145";
 Ping grafanPing = new Ping();
 PingReply grafanPingReply = grafanPing.Send(lokiIP);
 
-if (grafanPingReply.Status == IPStatus.Success)
+if(grafanPingReply.Status == IPStatus.Success)
 {
-    builder.Host.UseSerilog((hostContext, services, configuration) =>
-    {
+    builder.Host.UseSerilog((hostContext, services, configuration) => {
         configuration
         .MinimumLevel.Debug()
         .Enrich.WithProperty("Host", Environment.MachineName)
@@ -53,37 +52,15 @@ var discordClientOptions = new DiscordClientOptions()
 if (string.IsNullOrEmpty(discordClientOptions.WebhookUrl))
     throw new NullReferenceException(nameof(discordClientOptions.WebhookUrl));
 
-try
+
+var rocketLaunchLiveApiOptions = new RocketLaunchLiveAPIClientOptions()
 {
-    var rocketLaunchLiveApiOptions = new RocketLaunchLiveAPIClientOptions()
-    {
-        ApiKey = Environment.GetEnvironmentVariable("RocketLaunchLiveAPIKey"),
-        BaseUrl = "https://fdo.rocketlaunch.live"
-    };
+    ApiKey = Environment.GetEnvironmentVariable("RocketLaunchLiveAPIKey"),
+    BaseUrl = "https://fdo.rocketlaunch.live"
+};
 
-    if (string.IsNullOrEmpty(rocketLaunchLiveApiOptions.ApiKey))
-        throw new NullReferenceException(nameof(rocketLaunchLiveApiOptions.ApiKey));
-
-    var nasaApiOptions = new NasaOptions()
-    {
-        ApiKey = Environment.GetEnvironmentVariable("NasaAPIKey"),
-    };
-
-    if (string.IsNullOrEmpty(nasaApiOptions.ApiKey))
-        throw new NullReferenceException(nameof(nasaApiOptions.ApiKey));
-
-    builder.Services.AddHostedService<RocketLaunchLiveJob>();
-    builder.Services.AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions);
-    builder.Services.AddSingleton<INasaOptions, NasaOptions>(provider => nasaApiOptions);
-    builder.Services.AddSingleton<INasaClient, NasaClient>();
-    builder.Services.AddHostedService<APODJob>();
-}
-catch (Exception ex)
-{
-    Log.Warning("Could not start space bullshit");
-    Log.Error(ex, "I bet there's a missing api key");
-}
-
+if (string.IsNullOrEmpty(rocketLaunchLiveApiOptions.ApiKey))
+    throw new NullReferenceException(nameof(rocketLaunchLiveApiOptions.ApiKey));
 
 var dsharpDiscordClientConfiguration = new DiscordConfiguration
 {
@@ -94,6 +71,13 @@ var dsharpDiscordClientConfiguration = new DiscordConfiguration
     MinimumLogLevel = LogLevel.Debug,
 };
 
+var nasaApiOptions = new NasaOptions()
+{
+    ApiKey = Environment.GetEnvironmentVariable("NasaAPIKey"),
+};
+
+if (string.IsNullOrEmpty(nasaApiOptions.ApiKey))
+    throw new NullReferenceException(nameof(nasaApiOptions.ApiKey));
 
 var dsharpClient = new DSharpPlus.DiscordClient(dsharpDiscordClientConfiguration);
 
@@ -103,13 +87,16 @@ var sloganizerOptions = new SloganizerOptions()
     BaseUrl = "http://www.sloganizer.net"
 };
 
-builder.Services.AddSingleton<HttpClient, HttpClient>(provider => httpClient);
-
-builder.Services.AddSingleton<IUtility, Utility>();
-
-builder.Services.AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions);
-builder.Services.AddSingleton<IDiscordClient, Dolores.Clients.Discord.DiscordClient>();
-builder.Services.AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient);
+builder.Services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
+                    .AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions)
+                    .AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions)
+                    .AddSingleton<IDiscordClient, Dolores.Clients.Discord.DiscordClient>()
+                    .AddSingleton<IUtility, Utility>()
+                    .AddSingleton<INasaOptions, NasaOptions>(provider => nasaApiOptions)
+                    .AddSingleton<INasaClient, NasaClient>()
+                    .AddHostedService<APODJob>()
+                    .AddHostedService<RocketLaunchLiveJob>()
+                    .AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient);
 
 var dsharpCommandConfiguration = new CommandsNextConfiguration
 {
