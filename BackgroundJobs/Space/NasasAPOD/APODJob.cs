@@ -1,5 +1,4 @@
 ﻿using Dolores.Clients.Nasa;
-using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,21 +7,28 @@ using System.Threading.Tasks;
 
 namespace Dolores.BackgroundJobs.Space.NasasAPOD
 {
-
-    public class SpaceJob : IJob
+    public class APODJob : BaseJob
     {
+        private readonly PeriodicTimer _timer = new(TimeSpan.FromHours(24));
         private readonly INasaClient _nasaClient;
         private readonly IUtility _utility;
-        public SpaceJob(INasaClient nasaClient, IUtility utility)
+
+        public APODJob(INasaClient nasaClient, IUtility utility)
         {
             _nasaClient = nasaClient;
             _utility = utility;
         }
-        public async Task Execute(IJobExecutionContext context)
-        {
-            var message = await _nasaClient.GetApod();
-            await _utility.SendApod(message);
-        }
-    }
 
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            do
+            {
+                var message = await _nasaClient.GetApod();
+                await _utility.SendApod(message);
+            }
+            while (await _timer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested);
+
+        }
+
+    }
 }
