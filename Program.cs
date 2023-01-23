@@ -76,6 +76,7 @@ try
     builder.Services.AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions);
     builder.Services.AddSingleton<INasaOptions, NasaOptions>(provider => nasaApiOptions);
     builder.Services.AddSingleton<INasaClient, NasaClient>();
+    builder.Services.AddHostedService<APODJob>();
 }
 catch (Exception ex)
 {
@@ -104,12 +105,7 @@ var sloganizerOptions = new SloganizerOptions()
 
 builder.Services.AddSingleton<HttpClient, HttpClient>(provider => httpClient);
 
-
-
 builder.Services.AddSingleton<IUtility, Utility>();
-
-builder.Services.AddHostedService<APODJob>();
-
 
 builder.Services.AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions);
 builder.Services.AddSingleton<IDiscordClient, Dolores.Clients.Discord.DiscordClient>();
