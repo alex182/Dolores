@@ -13,8 +13,6 @@ using DSharpPlus.CommandsNext;
 using Serilog;
 using Serilog.Sinks.Grafana.Loki;
 using System.Net.NetworkInformation;
-using Quartz.Impl;
-using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,12 +52,9 @@ var discordClientOptions = new DiscordClientOptions()
 
 if (string.IsNullOrEmpty(discordClientOptions.WebhookUrl))
     throw new NullReferenceException(nameof(discordClientOptions.WebhookUrl));
-IScheduler scheduler = null;
+
 try
 {
-    StdSchedulerFactory factory = new StdSchedulerFactory();
-    scheduler = await factory.GetScheduler();
-
     var rocketLaunchLiveApiOptions = new RocketLaunchLiveAPIClientOptions()
     {
         ApiKey = Environment.GetEnvironmentVariable("RocketLaunchLiveAPIKey"),
@@ -81,24 +76,7 @@ try
     builder.Services.AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions);
     builder.Services.AddSingleton<INasaOptions, NasaOptions>(provider => nasaApiOptions);
     builder.Services.AddSingleton<INasaClient, NasaClient>();
-
-    IJobDetail job = JobBuilder.Create<SpaceJob>()
-    .WithIdentity("job1", "group1")
-    .Build();
-
-    // Trigger the job to run now, and then repeat every 10 seconds
-    ITrigger trigger = TriggerBuilder.Create()
-        .WithIdentity("trigger1", "group1")
-        .StartAt(new DateTimeOffset(DateTime.Today.AddDays(1))) // run every midnight?
-        .WithSimpleSchedule(x => x
-            .WithIntervalInHours(24)
-            .RepeatForever())
-        .Build();
-
-    // Tell Quartz to schedule the job using our trigger
-    await scheduler.ScheduleJob(job, trigger);
-
-    await scheduler.Start();
+    builder.Services.AddHostedService<APODJob>();
 }
 catch (Exception ex)
 {
@@ -147,8 +125,3 @@ var app = builder.Build();
 
 app.Services.GetService<IDiscordClient>().RunBotAsync();
 app.Run();
-
-if (scheduler != null)
-{
-    await scheduler.Shutdown();
-}
