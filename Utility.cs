@@ -70,11 +70,13 @@ namespace Dolores
 
         public async Task SendLaunchNotification(ResponseBody launchInfo)
         {
+
+            
             var message = new DiscordWebhookMessage()
             {
                 content = "Launch Notification 🚀"
             };
-            foreach (var launch in launchInfo.Result.Take(10))
+            foreach (var launch in launchInfo?.Result?.Take(10))
             {
                 var embed = new Embed();
                 embed.title = launch.Name;
