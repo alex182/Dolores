@@ -89,7 +89,7 @@ try
     // Trigger the job to run now, and then repeat every 10 seconds
     ITrigger trigger = TriggerBuilder.Create()
         .WithIdentity("trigger1", "group1")
-        .StartAt(new DateTimeOffset(DateTime.Today.AddHours(7))) // run every midnight?
+        .StartAt(new DateTimeOffset(DateTime.Today.AddDays(1))) // run every midnight?
         .WithSimpleSchedule(x => x
             .WithIntervalInHours(24)
             .RepeatForever())
