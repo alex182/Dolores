@@ -30,7 +30,9 @@ namespace Dolores.Commands.Yarn
 
 
         [SlashCommand("yarn", "Searches Yarn for GIFs")]
-        public async Task TestCommand(InteractionContext interactionContext, [Option("gifSearchString","What to search Yarn for")]string searchString)
+        public async Task SendYarn(InteractionContext interactionContext, [Option("gifSearchString","What to search Yarn for")]string searchString,
+            [Option("memberName", "Person you're replying to")]DiscordUser? member = null,
+            [Option("randomGif", "Randomize the returned gifs")]bool randomizeGifs = false)
         {
             var defferedBuilder = new DiscordInteractionResponseBuilder()
                 .AsEphemeral(true);
@@ -41,16 +43,18 @@ namespace Dolores.Commands.Yarn
             var buttons = new List<DiscordButtonComponent>();
             var builder = new DiscordFollowupMessageBuilder();
             var embeds = new List<DiscordEmbed>();
+            var random = new Random(); 
+            var gifsToSend = randomizeGifs ? gifs.OrderBy(x => random.Next()).Take(5).ToList() : gifs.Take(5).ToList();
 
-            foreach (var gif in gifs.Take(5))
+            foreach (var gif in gifsToSend)
             {
                 var embed = new DiscordEmbedBuilder()
                     .WithImageUrl(gif.GifLink);
 
                 embeds.Add(embed);
 
-                var buttonId = gifs.IndexOf(gif).ToString();
-                var buttonLabel = gifs.IndexOf(gif) + 1;
+                var buttonId = gifsToSend.IndexOf(gif).ToString();
+                var buttonLabel = gifsToSend.IndexOf(gif) + 1;
                 var button = new DiscordButtonComponent(ButtonStyle.Primary, customId: gif.ID, label: buttonLabel.ToString());
 
                 buttons.Add(button);
@@ -72,6 +76,11 @@ namespace Dolores.Commands.Yarn
                     var messageBuilder = new DiscordFollowupMessageBuilder()
                     .AddEmbed(embed);
 
+                     if(member != null)
+                     {
+                         messageBuilder.WithContent($"To: {member.Mention} From: {interactionContext.Interaction.User.Mention}");
+                     }
+
                     await interactionContext.FollowUpAsync(messageBuilder);
                 }           
              };
@@ -79,12 +88,12 @@ namespace Dolores.Commands.Yarn
             await interactionContext.EditResponseAsync(gifResponse);
         }
 
-        private Task Handle(DiscordClient sender, ComponentInteractionCreateEventArgs e)
+        internal Task Handle(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
             throw new NotImplementedException();
         }
 
-        private DiscordEmbed ModalSubmittedEmbed(DiscordUser expectedUser, DiscordInteraction inter, IReadOnlyDictionary<string, string> values)
+        internal DiscordEmbed ModalSubmittedEmbed(DiscordUser expectedUser, DiscordInteraction inter, IReadOnlyDictionary<string, string> values)
         {
             return new DiscordEmbedBuilder()
                 .WithAuthor(name: $"Modal Submitted: {inter.Data.CustomId}", iconUrl: inter.User.AvatarUrl)
@@ -133,5 +142,7 @@ namespace Dolores.Commands.Yarn
 
             return gifs;
         }
+
+
     }
 }
