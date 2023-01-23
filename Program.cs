@@ -12,23 +12,32 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using Serilog;
 using Serilog.Sinks.Grafana.Loki;
+using System.Net.NetworkInformation;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var lokiIP = "192.168.1.145";
 
-builder.Host.UseSerilog((hostContext, services, configuration) => {
-    configuration
-    .MinimumLevel.Debug()
-    .Enrich.WithProperty("Host", Environment.MachineName)
-    .Enrich.WithProperty("Application", "Dolores")
-    .Enrich.WithProperty("TimeStamp", DateTime.UtcNow)
-    .WriteTo
-    .GrafanaLoki("http://192.168.1.145:3100"
-        , new List<LokiLabel> { new() { Key = "Application", Value = "Dolores" } }
-        , credentials: null);
-});
+Ping grafanPing = new Ping();
+PingReply grafanPingReply = grafanPing.Send(lokiIP);
 
-Log.Information("Dolores is starting");
+if(grafanPingReply.Status == IPStatus.Success)
+{
+    builder.Host.UseSerilog((hostContext, services, configuration) => {
+        configuration
+        .MinimumLevel.Debug()
+        .Enrich.WithProperty("Host", Environment.MachineName)
+        .Enrich.WithProperty("Application", "Dolores")
+        .Enrich.WithProperty("TimeStamp", DateTime.UtcNow)
+        .WriteTo
+        .GrafanaLoki($"http://{lokiIP}:3100"
+            , new List<LokiLabel> { new() { Key = "Application", Value = "Dolores" } }
+            , credentials: null);
+    });
+
+    Log.Information("Dolores is starting");
+}
+
 
 var discordKey = Environment.GetEnvironmentVariable("DiscordKey");
 
