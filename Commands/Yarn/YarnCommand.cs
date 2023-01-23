@@ -75,11 +75,12 @@ namespace Dolores.Commands.Yarn
 
                     var messageBuilder = new DiscordFollowupMessageBuilder()
                     .AddEmbed(embed);
-
+                     messageBuilder.WithContent($"From: {interactionContext.Interaction.User.Mention}");
                      if(member != null)
                      {
-                         messageBuilder.WithContent($"To: {member.Mention} From: {interactionContext.Interaction.User.Mention}");
+                         messageBuilder.Content += $" To: {member.Mention}";
                      }
+                     
 
                     await interactionContext.FollowUpAsync(messageBuilder);
                 }           
