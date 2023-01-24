@@ -12,5 +12,6 @@ namespace Dolores
         Task<APIResultsWrapper<ResponseBody>> GetLaunches(DateTime? startDate, DateTime? endDate);
         Task SendLaunchNotification(ResponseBody launchInfo);
         Task SendApod(APODResponse message);
+        Task<APIResultsWrapper<ResponseBody>> GetWeatherAlerts();
     }
 }

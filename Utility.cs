@@ -1,4 +1,5 @@
-﻿using Dolores.Clients.Discord.Models;
+﻿using Dolores.BackgroundJobs.Weather.NWSAlerts;
+using Dolores.Clients.Discord.Models;
 using Dolores.Clients.Discord.Models.DiscordWebhookMessage;
 using Dolores.Clients.Models;
 using Dolores.Clients.Nasa.Models;
@@ -27,6 +28,7 @@ namespace Dolores
         private readonly IRocketLaunchLiveAPIClientOptions _rocketLaunchLiveAPIClientOptions;
         private readonly INasaOptions _nasaOptions;
         private readonly IDiscordClientOptions _discordClientOptions;
+        private readonly string weatherAlertAPI = "https://api.weather.gov/alerts/active/zone/";
 
         public Utility(HttpClient httpClient, IRocketLaunchLiveAPIClientOptions rocketLaunchLiveAPIClientOptions,
             IDiscordClientOptions discordClientOptions)
@@ -177,6 +179,27 @@ namespace Dolores
 
 
             var psotresp = await _httpClient.SendAsync(request);
+        }
+
+        public async Task<APIResultsWrapper<ResponseBody>> GetWeatherAlerts()
+        {
+            var result = new HttpResponseMessage();
+            var response = new ResponseBody();
+            foreach (var zoneId in AlertZoneIds.ServerZoneIDs)
+            {
+                _httpClient.DefaultRequestHeaders.Accept.Clear();
+                result = await _httpClient.GetAsync($"{weatherAlertAPI}/{zoneId}");
+
+
+                var body = await result.Content.ReadAsStringAsync();
+                response = JsonConvert.DeserializeObject<ResponseBody>(body);
+            }
+            return new APIResultsWrapper<ResponseBody>
+            {
+                Result = response,
+                IsSuccessStatusCode = result.IsSuccessStatusCode,
+                StatusCode = result.StatusCode
+            };
         }
 
     }
