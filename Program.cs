@@ -13,6 +13,8 @@ using DSharpPlus.CommandsNext;
 using Serilog;
 using Serilog.Sinks.Grafana.Loki;
 using System.Net.NetworkInformation;
+using Dolores.BackgroundJobs.Space.RocketLaunchLive.Models;
+using Dolores.BackgroundJobs.Space.NasasAPOD.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,6 +89,9 @@ var sloganizerOptions = new SloganizerOptions()
     BaseUrl = "http://www.sloganizer.net"
 };
 
+var rocketLaunchOptions = new RocketLaunchLiveJobOptions(); 
+var apodOptions = new APODJobOptions(); 
+
 builder.Services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
                     .AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions)
                     .AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions)
@@ -94,6 +99,8 @@ builder.Services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
                     .AddSingleton<IUtility, Utility>()
                     .AddSingleton<INasaOptions, NasaOptions>(provider => nasaApiOptions)
                     .AddSingleton<INasaClient, NasaClient>()
+                    .AddSingleton(provider => rocketLaunchOptions)
+                    .AddSingleton(provider => apodOptions)
                     .AddHostedService<APODJob>()
                     .AddHostedService<RocketLaunchLiveJob>()
                     .AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient);
