@@ -2,6 +2,6 @@
 {
     public class RocketLaunchLiveJobOptions
     {
-        public TimeSpan RunTime { get; set; } = new TimeSpan(7, 0, 0);
+        public TimeSpan RunTime { get; set; } = new TimeSpan(7, 5, 0);
     }
 }
