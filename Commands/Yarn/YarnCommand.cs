@@ -37,7 +37,7 @@ namespace Dolores.Commands.Yarn
         {
             try
             {
-                Log.Information($"Attempting to get gifs. {nameof(searchString)}:{searchString} {nameof(member)}:{member?.Mention} {nameof(randomizeGifs)}:{randomizeGifs}");
+                Log.Information($"Attempting to get gifs. {nameof(searchString)}:{searchString} {nameof(member)}:{member?.Mention ?? ""} {nameof(randomizeGifs)}:{randomizeGifs}");
 
                 var defferedBuilder = new DiscordInteractionResponseBuilder()
                .AsEphemeral(true);
@@ -45,6 +45,10 @@ namespace Dolores.Commands.Yarn
                 await interactionContext.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, defferedBuilder);
 
                 var gifs = await GetYarnGifs(searchString);
+
+                var logmessage = new {Gifs = gifs,Phrase=searchString };
+                Log.Information("{@logmessage}",logmessage);
+
                 var buttons = new List<DiscordButtonComponent>();
                 var builder = new DiscordFollowupMessageBuilder();
                 var embeds = new List<DiscordEmbed>();
@@ -78,8 +82,15 @@ namespace Dolores.Commands.Yarn
                         var embed = new DiscordEmbedBuilder()
                         .WithImageUrl(gifToSend.GifLink);
 
+                        Log.Information("{@logmessage}", 
+                            new
+                            {
+                                SelectGif = gifToSend.GifLink
+                            });
+
                         var messageBuilder = new DiscordFollowupMessageBuilder()
                         .AddEmbed(embed);
+
                         messageBuilder.WithContent($"From: {interactionContext.Interaction.User.Mention}");
                         if (member != null)
                         {

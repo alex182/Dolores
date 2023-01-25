@@ -73,6 +73,7 @@ namespace Dolores.Commands.Mocking
                 var castMember = (DiscordMember)member;
                 var insult = await RandomInsult(castMember.DisplayName);
 
+                Log.Information("{@logmessage}",new {Insult=insult});
 
                 var messageToSend = new DiscordWebhookBuilder()
                     .WithContent(insult);

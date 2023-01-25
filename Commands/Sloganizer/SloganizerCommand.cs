@@ -32,6 +32,9 @@ namespace Dolores.Commands.Sloganizer
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
                 var message = await GetSlogan(sloganWord);
+
+                Log.Information("{@logmessage}", new { Slogan = message });
+
                 var response = new DiscordWebhookBuilder()
                     .WithContent(message);
 
