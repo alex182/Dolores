@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dolores.Models.InsultApi
+namespace Dolores.Commands.Mocking
 {
     public class InsultApiResponse
     {
