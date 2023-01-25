@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,13 +26,22 @@ namespace Dolores.Commands.Sloganizer
         [SlashCommand("sloganize", "creates a random slogan")]
         public async Task Sloganize(InteractionContext ctx,[Option("sloganizeWord","Word to turn into a slogan")]string sloganWord)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            try 
+            {
+                Log.Information($"Sloganizing {sloganWord}");
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var message = await GetSlogan(sloganWord);
-            var response = new DiscordWebhookBuilder()
-                .WithContent(message);
+                var message = await GetSlogan(sloganWord);
+                var response = new DiscordWebhookBuilder()
+                    .WithContent(message);
 
-            await ctx.EditResponseAsync(response);
+                await ctx.EditResponseAsync(response);
+            }
+            catch(Exception ex)
+            {
+                Log.Error($"Failed to sloganize {sloganWord}",ex);
+            }
+
         }
 
         internal async Task<string> GetSlogan(string sloganWord)

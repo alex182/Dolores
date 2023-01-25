@@ -6,6 +6,7 @@ using Dolores.Clients.RocketLaunch;
 using Dolores.Clients.RocketLaunch.Models.RocketLaunchLive.Response;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,20 +36,26 @@ namespace Dolores.BackgroundJobs.Space.RocketLaunchLive
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            do
+            try
             {
-                var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
-                DateTime currentTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
-
-                if (currentTime.TimeOfDay.Hours == _rocketLaunchLiveJobOptions.RunTime.Hours && currentTime.TimeOfDay.Minutes == _rocketLaunchLiveJobOptions.RunTime.Minutes)
+                do
                 {
-                    var message = await GetLaunches(null, null);
-                    await SendLaunchNotification(message.Result);
+                    var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
+                    DateTime currentTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
+
+                    if (currentTime.TimeOfDay.Hours == _rocketLaunchLiveJobOptions.RunTime.Hours && currentTime.TimeOfDay.Minutes == _rocketLaunchLiveJobOptions.RunTime.Minutes)
+                    {
+                        var message = await GetLaunches(null, null);
+                        await SendLaunchNotification(message.Result);
+                    }
+
                 }
-
+                while (await _timer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested);
             }
-            while (await _timer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested);
-
+            catch (Exception ex)
+            {
+                Log.Error("$Failed to send Rocket Launch Notification",ex);
+            }            
         }
 
         internal async Task<APIResultsWrapper<ResponseBody>> GetLaunches(DateTime? startDate, DateTime? endDate)
@@ -83,7 +90,7 @@ namespace Dolores.BackgroundJobs.Space.RocketLaunchLive
             };
         }
 
-        public async Task SendLaunchNotification(ResponseBody launchInfo)
+        internal async Task SendLaunchNotification(ResponseBody launchInfo)
         {
             var message = new DiscordWebhookMessage()
             {
