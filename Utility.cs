@@ -1,4 +1,4 @@
-﻿using Dolores.BackgroundJobs.Weather.NWSAlerts;
+﻿using Dolores.BackgroundJobs.Weather.NWSAlerts.Models;
 using Dolores.Clients.Discord.Models;
 using Dolores.Clients.Discord.Models.DiscordWebhookMessage;
 using Dolores.Clients.Models;

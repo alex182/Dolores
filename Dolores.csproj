@@ -10,6 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Startup\**" />
+    <Content Remove="Startup\**" />
+    <EmbeddedResource Remove="Startup\**" />
+    <None Remove="Startup\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove=".drone.yml" />
     <None Remove="build.sh" />
     <None Remove="Commands\Mocking\Images\Base\spongebob.jpg" />
@@ -57,7 +64,6 @@
 
   <ItemGroup>
     <Folder Include="Commands\Mocking\Images\Generated\" />
-    <Folder Include="Startup\" />
   </ItemGroup>
 
 </Project>
