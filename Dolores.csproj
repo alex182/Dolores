@@ -10,9 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\**" />
     <Compile Remove="Startup\**" />
+    <Content Remove="Models\**" />
     <Content Remove="Startup\**" />
+    <EmbeddedResource Remove="Models\**" />
     <EmbeddedResource Remove="Startup\**" />
+    <None Remove="Models\**" />
     <None Remove="Startup\**" />
   </ItemGroup>
 
@@ -56,7 +60,6 @@
 
   <ItemGroup>
     <Folder Include="Commands\Mocking\Images\Generated\" />
-    <Folder Include="Models\InsultApi\" />
   </ItemGroup>
 
 </Project>
