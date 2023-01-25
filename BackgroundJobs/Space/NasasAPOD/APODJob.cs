@@ -5,6 +5,7 @@ using Dolores.Clients.Discord.Models.DiscordWebhookMessage;
 using Dolores.Clients.Nasa;
 using Dolores.Clients.Nasa.Models;
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,19 +33,27 @@ namespace Dolores.BackgroundJobs.Space.NasasAPOD
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            do
+            try
             {
-                var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
-                DateTime currentTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
-
-                if (currentTime.TimeOfDay.Hours == _apodOptions.RunTime.Hours && currentTime.TimeOfDay.Minutes == _apodOptions.RunTime.Minutes)
+                do
                 {
-                    var message = await _nasaClient.GetApod();
-                    await SendApod(message);
-                }
+                    var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
+                    DateTime currentTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
 
+                    if (currentTime.TimeOfDay.Hours == _apodOptions.RunTime.Hours && currentTime.TimeOfDay.Minutes == _apodOptions.RunTime.Minutes)
+                    {
+                        var message = await _nasaClient.GetApod();
+                        await SendApod(message);
+                    }
+
+                }
+                while (await _timer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested);
             }
-            while (await _timer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested);
+            catch(Exception ex)
+            {
+                Log.Error("$Failed to send APOD",ex);
+            }
+           
 
         }
 

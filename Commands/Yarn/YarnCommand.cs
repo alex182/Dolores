@@ -9,6 +9,7 @@ using DSharpPlus.SlashCommands;
 using HtmlAgilityPack;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json.Linq;
+using Serilog;
 using System.Linq;
 using System.Net.Http;
 using System.Xml;
@@ -34,64 +35,79 @@ namespace Dolores.Commands.Yarn
             [Option("memberName", "Person you're replying to")]DiscordUser? member = null,
             [Option("randomGif", "Randomize the returned gifs")]bool randomizeGifs = false)
         {
-            var defferedBuilder = new DiscordInteractionResponseBuilder()
-                .AsEphemeral(true);
-
-            await interactionContext.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, defferedBuilder);
-
-            var gifs = await GetYarnGifs(searchString);
-            var buttons = new List<DiscordButtonComponent>();
-            var builder = new DiscordFollowupMessageBuilder();
-            var embeds = new List<DiscordEmbed>();
-            var random = new Random(); 
-            var gifsToSend = randomizeGifs ? gifs.OrderBy(x => random.Next()).Take(5).ToList() : gifs.Take(5).ToList();
-
-            foreach (var gif in gifsToSend)
+            try
             {
-                var embed = new DiscordEmbedBuilder()
-                    .WithImageUrl(gif.GifLink);
+                Log.Information($"Attempting to get gifs. {nameof(searchString)}:{searchString} {nameof(member)}:{member?.Mention ?? ""} {nameof(randomizeGifs)}:{randomizeGifs}");
 
-                embeds.Add(embed);
+                var defferedBuilder = new DiscordInteractionResponseBuilder()
+               .AsEphemeral(true);
 
-                var buttonId = gifsToSend.IndexOf(gif).ToString();
-                var buttonLabel = gifsToSend.IndexOf(gif) + 1;
-                var button = new DiscordButtonComponent(ButtonStyle.Primary, customId: gif.ID, label: buttonLabel.ToString());
+                await interactionContext.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, defferedBuilder);
 
-                buttons.Add(button);
-            }
+                var gifs = await GetYarnGifs(searchString);
 
-            var gifResponse = new DiscordWebhookBuilder()
-               .AddComponents(buttons)
-               .AddEmbeds(embeds);
+                var logmessage = new {Gifs = gifs,Phrase=searchString };
+                Log.Information("{@logmessage}",logmessage);
 
-            var interactivity = interactionContext.Client.GetInteractivity();
-             interactionContext.Client.ComponentInteractionCreated += async (s,e) =>
-             {          
-                var gifToSend = gifs.FirstOrDefault(g => g.ID == e.Id);
-                if (gifToSend != null)
+                var buttons = new List<DiscordButtonComponent>();
+                var builder = new DiscordFollowupMessageBuilder();
+                var embeds = new List<DiscordEmbed>();
+                var random = new Random();
+                var gifsToSend = randomizeGifs ? gifs.OrderBy(x => random.Next()).Take(5).ToList() : gifs.Take(5).ToList();
+
+                foreach (var gif in gifsToSend)
                 {
                     var embed = new DiscordEmbedBuilder()
-                    .WithImageUrl(gifToSend.GifLink);
+                        .WithImageUrl(gif.GifLink);
 
-                    var messageBuilder = new DiscordFollowupMessageBuilder()
-                    .AddEmbed(embed);
-                     messageBuilder.WithContent($"From: {interactionContext.Interaction.User.Mention}");
-                     if(member != null)
-                     {
-                         messageBuilder.Content += $" To: {member.Mention}";
-                     }
-                     
+                    embeds.Add(embed);
 
-                    await interactionContext.FollowUpAsync(messageBuilder);
-                }           
-             };
+                    var buttonId = gifsToSend.IndexOf(gif).ToString();
+                    var buttonLabel = gifsToSend.IndexOf(gif) + 1;
+                    var button = new DiscordButtonComponent(ButtonStyle.Primary, customId: gif.ID, label: buttonLabel.ToString());
 
-            await interactionContext.EditResponseAsync(gifResponse);
-        }
+                    buttons.Add(button);
+                }
 
-        internal Task Handle(DiscordClient sender, ComponentInteractionCreateEventArgs e)
-        {
-            throw new NotImplementedException();
+                var gifResponse = new DiscordWebhookBuilder()
+                   .AddComponents(buttons)
+                   .AddEmbeds(embeds);
+
+                var interactivity = interactionContext.Client.GetInteractivity();
+                interactionContext.Client.ComponentInteractionCreated += async (s, e) =>
+                {
+                    var gifToSend = gifs.FirstOrDefault(g => g.ID == e.Id);
+                    if (gifToSend != null)
+                    {
+                        var embed = new DiscordEmbedBuilder()
+                        .WithImageUrl(gifToSend.GifLink);
+
+                        Log.Information("{@logmessage}", 
+                            new
+                            {
+                                SelectGif = gifToSend.GifLink
+                            });
+
+                        var messageBuilder = new DiscordFollowupMessageBuilder()
+                        .AddEmbed(embed);
+
+                        messageBuilder.WithContent($"From: {interactionContext.Interaction.User.Mention}");
+                        if (member != null)
+                        {
+                            messageBuilder.Content += $" To: {member.Mention}";
+                        }
+
+                        await interactionContext.FollowUpAsync(messageBuilder);
+                    }
+                };
+
+                await interactionContext.EditResponseAsync(gifResponse);
+            }
+            catch(Exception ex) 
+            {
+                Log.Error($"Failed to get gifs. {nameof(searchString)}:{searchString} {nameof(member)}:{member?.Mention} {nameof(randomizeGifs)}:{randomizeGifs}",ex);
+            }
+
         }
 
         internal DiscordEmbed ModalSubmittedEmbed(DiscordUser expectedUser, DiscordInteraction inter, IReadOnlyDictionary<string, string> values)
