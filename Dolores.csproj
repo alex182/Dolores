@@ -10,27 +10,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\**" />
     <Compile Remove="Startup\**" />
+    <Content Remove="Models\**" />
     <Content Remove="Startup\**" />
+    <EmbeddedResource Remove="Models\**" />
     <EmbeddedResource Remove="Startup\**" />
+    <None Remove="Models\**" />
     <None Remove="Startup\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove=".drone.yml" />
-    <None Remove="build.sh" />
     <None Remove="Commands\Mocking\Images\Base\spongebob.jpg" />
     <None Remove="readme.md" />
     <None Remove="spongebob.jpg" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include=".drone.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="build.sh">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Commands\Mocking\Images\Base\spongebob.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

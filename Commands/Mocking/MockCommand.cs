@@ -1,10 +1,10 @@
-﻿using Dolores.Models.InsultApi;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,43 +28,63 @@ namespace Dolores.Commands.Mocking
         [SlashCommand("mock", "Mocks the tagged person")]
         public async Task Mock(InteractionContext ctx,[Option("memberName","Person to mock")] DiscordUser member)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-
-            var message = await GetLastMessageAsync(ctx, member);
-
-            if (string.IsNullOrEmpty(message))
+            try
             {
-                var response = new DiscordWebhookBuilder()
-                    .WithContent($"Couldn't find a message for {member.Mention}");
+                Log.Information($"Mocking {member.Mention}");
 
-                await ctx.EditResponseAsync(response);
-                return;
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+                var message = await GetLastMessageAsync(ctx, member);
+
+                if (string.IsNullOrEmpty(message))
+                {
+                    var response = new DiscordWebhookBuilder()
+                        .WithContent($"Couldn't find a message for {member.Mention}");
+
+                    await ctx.EditResponseAsync(response);
+                    return;
+                }
+
+                var sarcasticImage = _memeGenerator.CreateSpongeBob(Sarcastify(message));
+
+                using (FileStream fs = File.OpenRead(sarcasticImage))
+                {
+                    var messageToSend = new DiscordWebhookBuilder()
+                    .AddFile(sarcasticImage, fs);
+
+                    await ctx.EditResponseAsync(messageToSend);
+                }
             }
-
-            var sarcasticImage = _memeGenerator.CreateSpongeBob(Sarcastify(message));
-
-            using (FileStream fs = File.OpenRead(sarcasticImage))
+            catch(Exception ex )
             {
-                var messageToSend = new DiscordWebhookBuilder()
-                .AddFile(sarcasticImage, fs);
-
-                await ctx.EditResponseAsync(messageToSend);
+                Log.Error($"Failed to Mock {member.Mention}",ex);
             }
         }
 
         [SlashCommand("insult", "Insults the tagged person")]
-        public async Task Insult(InteractionContext ctx, [Option("memberName", "Person to mock")] DiscordUser member)
+        public async Task Insult(InteractionContext ctx, [Option("memberName", "Person to insult")] DiscordUser member)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            try
+            {
+                Log.Information($"Insulting {member.Mention}");
 
-            var castMember = (DiscordMember)member;
-            var insult = await RandomInsult(castMember.DisplayName);
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
+                var castMember = (DiscordMember)member;
+                var insult = await RandomInsult(castMember.DisplayName);
 
-            var messageToSend = new DiscordWebhookBuilder()
-                .WithContent(insult);
+                Log.Information("{@logmessage}",new {Insult=insult});
 
-            await ctx.EditResponseAsync(messageToSend);
+                var messageToSend = new DiscordWebhookBuilder()
+                    .WithContent(insult);
+
+                await ctx.EditResponseAsync(messageToSend);
+            }
+            catch(Exception ex )
+            {
+                Log.Error($"Failed to Insult {member.Mention}", ex);
+            }
+
         }
 
         internal async Task<string> GetLastMessageAsync(InteractionContext ctx, DiscordUser member)
@@ -73,6 +93,7 @@ namespace Dolores.Commands.Mocking
             messages = messages.ToList();
             return messages.Where(message => message.Author.Id.Equals(member.Id))?.FirstOrDefault(message => message.Content != ".")?.Content;
         }
+
         internal string Sarcastify(string word)
         {
             if(string.IsNullOrEmpty(word)) return "";
@@ -128,7 +149,5 @@ namespace Dolores.Commands.Mocking
 
             return JsonConvert.DeserializeObject<InsultApiResponse>(body);
         }
-
-
     }
 }
