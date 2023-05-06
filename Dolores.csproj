@@ -60,6 +60,7 @@
 
   <ItemGroup>
     <Folder Include="Commands\Mocking\Images\Generated\" />
+    <Folder Include="Commands\Noaa\Models\" />
   </ItemGroup>
 
 </Project>

@@ -20,6 +20,9 @@ using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Interactivity;
 using System.Net.NetworkInformation;
 using Microsoft.Extensions.DependencyInjection;
+using Dolores.Commands.Noaa;
+using Dolores.Clients.Noaa.Models;
+using Dolores.Clients.Noaa;
 
 namespace Dolores.Clients.Discord
 {
@@ -55,14 +58,18 @@ namespace Dolores.Clients.Discord
             {
                 BaseUrl = "http://www.sloganizer.net"
             };
+            var noaaClientOptions = new NoaaOptions();
+
 
             _slashCommands = _client.UseSlashCommands(new SlashCommandsConfiguration
             {
                 Services = new ServiceCollection()
                 .AddSingleton<HttpClient, HttpClient>(provider => httpClient)
+                .AddSingleton<INoaaOptions, NoaaOptions>(provider => noaaClientOptions)
                 .AddSingleton<IYarnCommandOptions, YarnCommandOptions>(provider => yarnOptions)
                 .AddSingleton<ISloganizerOptions, SloganizerOptions>(provider => sloganizerOptions)
                 .AddTransient<MemeGenerator, MemeGenerator>()
+                .AddSingleton<INoaaClient, NoaaClient>()
                 .BuildServiceProvider()
             }); ;
 
@@ -77,6 +84,7 @@ namespace Dolores.Clients.Discord
 
             _slashCommands.RegisterCommands<MockCommand>(guildId: 968181128504676372);
             _slashCommands.RegisterCommands<SloganizerCommand>(guildId: 968181128504676372);
+            _slashCommands.RegisterCommands<NoaaCommand>(guildId: 968181128504676372);
             _slashCommands.RegisterCommands<YarnCommand>(guildId: 968181128504676372);
         }
 

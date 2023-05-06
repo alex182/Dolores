@@ -15,6 +15,9 @@ using Serilog.Sinks.Grafana.Loki;
 using System.Net.NetworkInformation;
 using Dolores.BackgroundJobs.Space.RocketLaunchLive.Models;
 using Dolores.BackgroundJobs.Space.NasasAPOD.Model;
+using Dolores.Commands.Noaa;
+using Dolores.Clients.Noaa;
+using Dolores.Clients.Noaa.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,12 +95,16 @@ var sloganizerOptions = new SloganizerOptions()
 var rocketLaunchOptions = new RocketLaunchLiveJobOptions(); 
 var apodOptions = new APODJobOptions(); 
 
+var noaaClientOptions = new NoaaOptions(); 
+
 builder.Services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
                     .AddSingleton<IRocketLaunchLiveAPIClientOptions, RocketLaunchLiveAPIClientOptions>(provider => rocketLaunchLiveApiOptions)
                     .AddSingleton<IDiscordClientOptions, DiscordClientOptions>(provider => discordClientOptions)
                     .AddSingleton<IDiscordClient, Dolores.Clients.Discord.DiscordClient>()
                     .AddSingleton<INasaOptions, NasaOptions>(provider => nasaApiOptions)
+                    .AddSingleton<INoaaOptions, NoaaOptions>(provider => noaaClientOptions)
                     .AddSingleton<INasaClient, NasaClient>()
+                    .AddSingleton<INoaaClient, NoaaClient>()
                     .AddSingleton(provider => rocketLaunchOptions)
                     .AddSingleton(provider => apodOptions)
                     .AddHostedService<APODJob>()
