@@ -22,7 +22,7 @@ namespace Dolores.Clients.Noaa
         {
             _httpClient.DefaultRequestHeaders.Add("User-Agent", _userAgent);
 
-            var response = await _httpClient.GetAsync($"{_noaaOptions}/points/{request.Latitude},{request.Longitude}");
+            var response = await _httpClient.GetAsync($"{_noaaOptions.BaseUrl}/points/{request.Latitude},{request.Longitude}");
             response.EnsureSuccessStatusCode();
 
             var body = await response.Content.ReadAsStringAsync();
@@ -36,7 +36,7 @@ namespace Dolores.Clients.Noaa
         {
             _httpClient.DefaultRequestHeaders.Add("User-Agent", _userAgent);
 
-            var response = await _httpClient.GetAsync($"{_noaaOptions}/gridpoints/EAX/{request.GridPointOne},{request.GridPointTwo}/forecast");
+            var response = await _httpClient.GetAsync($"{_noaaOptions.BaseUrl}/gridpoints/EAX/{request.GridPointOne},{request.GridPointTwo}/forecast");
             response.EnsureSuccessStatusCode();
 
             var body = await response.Content.ReadAsStringAsync();

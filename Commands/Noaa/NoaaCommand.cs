@@ -1,5 +1,6 @@
 ﻿using Dolores.Clients.Noaa;
 using Dolores.Commands.Yarn.Models;
+using Dolores.Processors.Noaa;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -10,12 +11,7 @@ using DSharpPlus.SlashCommands;
 using HtmlAgilityPack;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Serilog;
-using System.Linq;
-using System.Net.Http;
-using System.Xml;
-using System.Xml.Linq;
 
 namespace Dolores.Commands.Noaa
 {
@@ -23,15 +19,16 @@ namespace Dolores.Commands.Noaa
     public class NoaaCommand : ApplicationCommandModule
     {
         private INoaaClient _noaaClient;
+        private IForecastToEmbedProcessor _forecastToEmbedProcessor;
 
-        public NoaaCommand(NoaaClient noaaClient)
+        public NoaaCommand(INoaaClient noaaClient, IForecastToEmbedProcessor forecastToEmbedProcessor)
         {
             _noaaClient = noaaClient;
+            _forecastToEmbedProcessor = forecastToEmbedProcessor;
         }
 
-
         [SlashCommand("forecast", "Gets the weather forecast for a given area")]
-        public async Task GetForecast(InteractionContext interactionContext, [Option("gridpointOne","first gridpoint")]string gridpointOne  = "44",
+        public async Task Forecast(InteractionContext interactionContext, [Option("gridpointOne","first gridpoint")]string gridpointOne  = "44",
             [Option("gridpointTwo", "second gridpoint")] string gridpointTwo = "51")
         {
             try
@@ -47,8 +44,10 @@ namespace Dolores.Commands.Noaa
                         GridPointTwo = gridpointTwo
                     });
 
+                var embeds = _forecastToEmbedProcessor.Process(forecast);
+
                 var response = new DiscordWebhookBuilder()
-                    .WithContent(JsonConvert.SerializeObject(forecast));
+                    .AddEmbeds(embeds);
 
                 await interactionContext.EditResponseAsync(response);
             }

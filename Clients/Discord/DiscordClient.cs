@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Dolores.Commands.Noaa;
 using Dolores.Clients.Noaa.Models;
 using Dolores.Clients.Noaa;
+using Dolores.Processors.Noaa;
 
 namespace Dolores.Clients.Discord
 {
@@ -70,6 +71,7 @@ namespace Dolores.Clients.Discord
                 .AddSingleton<ISloganizerOptions, SloganizerOptions>(provider => sloganizerOptions)
                 .AddTransient<MemeGenerator, MemeGenerator>()
                 .AddSingleton<INoaaClient, NoaaClient>()
+                .AddSingleton<IForecastToEmbedProcessor, ForecastToEmbedProcessor>()
                 .BuildServiceProvider()
             }); ;
 

@@ -5,7 +5,7 @@
  #docker image tag dolores 192.168.1.136:9005/dolores:latest
  #docker image push 192.168.1.136:9005/dolores:latest
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS base
 RUN apt-get update && apt-get install -y apt-utils libgdiplus libc6-dev
 WORKDIR /app
 ENV DiscordBotCommandPrefix="/"
@@ -15,7 +15,7 @@ ENV RocketLaunchLiveAPIKey ""
 ENV NasaAPIKey ""
 
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["Dolores.csproj", "."]
 RUN dotnet restore "./Dolores.csproj"
