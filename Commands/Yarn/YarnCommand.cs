@@ -31,7 +31,9 @@ namespace Dolores.Commands.Yarn
 
 
         [SlashCommand("yarn", "Searches Yarn for GIFs")]
-        public async Task SendYarn(InteractionContext interactionContext, [Option("gifSearchString","What to search Yarn for")]string searchString,
+        public async Task SendYarn(InteractionContext interactionContext, 
+            [Option("gifSearchString","What to search Yarn for")]string searchString,
+            [Option("sourceMaterial", "Source Material (tv show/movie/etc) to search for")] string sourceMaterial = "",
             [Option("memberName", "Person you're replying to")]DiscordUser? member = null,
             [Option("randomGif", "Randomize the returned gifs")]bool randomizeGifs = false)
         {
@@ -44,7 +46,7 @@ namespace Dolores.Commands.Yarn
 
                 await interactionContext.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, defferedBuilder);
 
-                var gifs = await GetYarnGifs(searchString);
+                var gifs = await GetYarnGifs(searchString, sourceMaterial);
 
                 var logmessage = new {Gifs = gifs,Phrase=searchString };
                 Log.Information("{@logmessage}",logmessage);
@@ -118,12 +120,20 @@ namespace Dolores.Commands.Yarn
                 .AddField("Expected", expectedUser.Mention, true).AddField("Actual", inter.User.Mention, true);
         }
 
-        internal async Task<List<YarnGif>> GetYarnGifs(string gifSearch)
+        internal async Task<List<YarnGif>> GetYarnGifs(string gifSearch, string sourceMaterial)
         {
             var gifs = new List<YarnGif>();
 
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0");
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"{_yarnOptions.BaseUrl}yarn-find?text={gifSearch}"));
+
+            var requestURI = new Uri($"{_yarnOptions.BaseUrl}yarn-find?text={gifSearch}"); 
+
+            if (!string.IsNullOrEmpty(sourceMaterial))
+            {
+                requestURI = new Uri($"{_yarnOptions.BaseUrl}yarn-find?text=:'{sourceMaterial}'{gifSearch}");
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Get, requestURI);
             request.Headers.Accept.Clear();
 
             var response = await _httpClient.SendAsync(request);
