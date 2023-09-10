@@ -1,13 +1,17 @@
 ﻿using Dolores.Services.UkraineStats.Models;
 using HtmlAgilityPack;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.DevTools.V114.Profiler;
+using OpenQA.Selenium.Support.UI;
 using System.Text.RegularExpressions;
-using RandomUserAgent;
+
+
 
 namespace Dolores.Services.UkraineStats
 {
     public class UkraineStats_Service
     {
-        private readonly HttpClient _httpClient; 
+        private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly UkraineStats_Service_Options _options;
 
@@ -25,53 +29,70 @@ namespace Dolores.Services.UkraineStats
             var url = $"{_options.BaseUrl}/en/news/{date.Year}/{date.Month.ToString("00")}/{date.Day.ToString("00")}/" +
                 $"the-total-combat-losses-of-the-enemy-from-24-02-2022-to-{date.Day.ToString("00")}-{date.Month.ToString("00")}-{date.Year}/";
 
-            var userAgent = RandomUa.RandomUserAgent;
+            var options = new ChromeOptions();
+            options.AddArgument("--headless=new");
+            var driver = new ChromeDriver(options);
+            driver.Navigate().GoToUrl(url);
 
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
-            _httpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
-            _httpClient.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
-            _httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
-            _httpClient.DefaultRequestHeaders.Add("Referer", "https://www.google.com/");
-            _httpClient.DefaultRequestHeaders.Add("Connection", "keep-alive");
-            _httpClient.DefaultRequestHeaders.Add("Cookie", "name=value; Path=/; cf_clearance=_ZIpi71l.1UgKYx16Ay8w6_S.K61xxXoSS9Vde15tzY-1694290961-0-1-f9936a2a.69e58009.ae9235ca-0.2.1694290961; PHPSESSID=6rmjicsa1ldc5n18i9dlira2k4; __cf_bm=Yq0jC4c43OiKRQx75wb4g8kMw_7283KOF.f2K9vjll0-1694290840-0-AZEk+lAdLhG8y0itIJPxEPHCimBpjYdpoMFK156Wd0O/qcjJTF+2BOG8NvTRVVNDmsz4oUKXm5bgUHSgL7HpOUA=");
-            _httpClient.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
-            _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
-            _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
-            _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-Site", "cross-site");
-            _httpClient.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
-            _httpClient.DefaultRequestHeaders.Add("TE", "trailers");
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            string pageSource = driver.PageSource;
 
-            var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
+            if (string.IsNullOrEmpty(pageSource))
                 return results;
 
-            HttpContent content = response.Content;
-
-            string html = await content.ReadAsStringAsync();
             HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            doc.LoadHtml(pageSource);
 
             var combatLossesParagraph = doc.DocumentNode.SelectSingleNode("//p[contains(text(),'The total combat losses of the enemy from')]");
             string[] lines = combatLossesParagraph.InnerHtml.Split(new[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries);
 
+            if(lines.Length == 1)
+            {
+                return results; 
+            }
+
             foreach (string line in lines.ToList().GetRange(1, 12))
             {
-                var asset = new AssetStat(); 
-                string text = HtmlEntity.DeEntitize(HtmlEntity.Entitize(line)).Trim();
-                var splitText = Regex.Split(text, @" – ");
+                _logger.LogInformation("{@line}",line);
+
+                var asset = new AssetStat();
+                var splitText = Regex.Split(line, @" – ");
+
+                _logger.LogInformation("{@splitText}", splitText);
+
 
                 if (splitText.Length == 1)
                 {
-                    splitText = Regex.Split(text, @" ‒ ");
+                    splitText = Regex.Split(line, @" ‒ ");
+
+                    _logger.LogInformation("Regex Match: {@splitText}", splitText);
                 }
 
                 var assetCategory = splitText[0];
+                _logger.LogInformation("{@assetCategory}", assetCategory);
+
                 var counts = splitText[1].Split();
 
-                asset.Total = Convert.ToInt32(counts[0]);
-                asset.DailyDiff = Convert.ToInt32(counts[1]?.Replace("(+", "").Replace("),", ""));
+                _logger.LogInformation("{@counts}", counts);
 
+                string firstCount = counts.FirstOrDefault(s => int.TryParse(s, out _));
+
+                _logger.LogInformation("{@firstCount}", firstCount);
+
+
+                if (firstCount != null)
+                {
+                    asset.Total = int.Parse(firstCount);
+                }
+
+                string diffString = counts.FirstOrDefault(s => s.StartsWith("(+"));
+
+                _logger.LogInformation("{@diffString}", diffString);
+
+                if (diffString != null)
+                {
+                    asset.DailyDiff = Convert.ToInt32(diffString.Replace("(+", "").Replace(")", "").Replace(",", ""));
+                }
 
                 switch (assetCategory)
                 {
@@ -116,8 +137,13 @@ namespace Dolores.Services.UkraineStats
                         break;
                     default:
                         asset.AssetCategory = AssetCategory.Uncategorized;
+                        _logger.LogInformation("Uncategorized Asset: {@AssetCategory}", asset.AssetCategory);
                         break;
-                }                
+                }
+
+                _logger.LogInformation("{@asset}", asset);
+
+                results.Add(asset);
             }
 
 

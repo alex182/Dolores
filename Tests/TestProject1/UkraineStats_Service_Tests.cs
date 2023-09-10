@@ -23,7 +23,6 @@ namespace TestProject1
                 var logger = Substitute.For<ILogger>();
 
                 _ukraineStatService = new UkraineStats_Service(httpClient, logger, options);
-
             }
 
             [TestMethod]
@@ -34,6 +33,17 @@ namespace TestProject1
                 var stats = await _ukraineStatService.GetAssetStats(date);
 
                 stats.Count.Should().BeGreaterThan(0);
+            }
+
+
+            [TestMethod]
+            public async Task UkrainStat_DateInFuture_AssetsShouldBeZero()
+            {
+                var date = DateTime.UtcNow.AddDays(1);
+
+                var stats = await _ukraineStatService.GetAssetStats(date);
+
+                stats.Count().Should().Be(0);
             }
         }
     }
