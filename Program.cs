@@ -94,7 +94,7 @@ var sloganizerOptions = new SloganizerOptions()
 
 var milStatsOptions = new Ukraine_MilStatsJobOptions()
 {
-    WebookUrl = ""
+    WebookUrl = Environment.GetEnvironmentVariable("RussianLossesWebhook")
 };
 
 var ukraineStats_ServiceOptions = new UkraineStats_Service_Options();

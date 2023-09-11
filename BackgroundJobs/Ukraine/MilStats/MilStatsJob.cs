@@ -48,9 +48,9 @@ namespace Dolores.BackgroundJobs.Space.NasasAPOD
 
                     if (currentTime.TimeOfDay.Hours == _jobOptions.RunTime.Hours && currentTime.TimeOfDay.Minutes == _jobOptions.RunTime.Minutes)
                     {
-                        var assets = await _ukraineStatsService.GetAssetStats(currentTime);
-                        var imgUrl = _ukraineStatsService.GetInfographicUrl(currentTime);
-                        await SendMilStats(assets, imgUrl);
+                            var assets = await _ukraineStatsService.GetAssetStats(currentTime);
+                            var imgUrl = _ukraineStatsService.GetInfographicUrl(currentTime);
+                            await SendMilStats(assets, imgUrl);
                     }
 
                 }
@@ -84,19 +84,16 @@ namespace Dolores.BackgroundJobs.Space.NasasAPOD
 
             foreach (var asset in assets)
             {
-                embed.fields.Add(new Field
-                {
-                    name = "",
-                    value = $"{asset.AssetCategory.GetDisplayName()}\n Total: {asset.Total} Diff: {asset.DailyDiff}"
-                });
+                embed.description += $"\n{asset.AssetCategory.GetDisplayName()} - (+{asset.DailyDiff}) {asset.Total}";
             }
 
             using StringContent content = new StringContent(JsonConvert.SerializeObject(message), Encoding.UTF8, "application/json");
 
+        //https://discord.com/channels/968181128504676372/1065387852189409321
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri(_jobOptions.WebookUrl),
+                RequestUri = new Uri($"{_jobOptions.WebookUrl}?thread_id=1065387852189409321"),
                 Content = content
             };
 

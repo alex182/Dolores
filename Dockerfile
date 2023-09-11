@@ -13,6 +13,7 @@ ENV DiscordKey ""
 ENV DiscordWebhookUrl ""
 ENV RocketLaunchLiveAPIKey ""
 ENV NasaAPIKey ""
+ENV RussianLossesWebhook ""
 
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
