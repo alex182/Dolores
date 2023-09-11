@@ -18,17 +18,15 @@ namespace TestProject1
             [ClassInitialize]
             public static void Init(TestContext context)
             {
-                var httpClient = new HttpClient();
                 var options = new UkraineStats_Service_Options();
-                var logger = Substitute.For<ILogger>();
 
-                _ukraineStatService = new UkraineStats_Service(httpClient, logger, options);
+                _ukraineStatService = new UkraineStats_Service(options);
             }
 
             [TestMethod]
             public async Task UkrainStat_ValidDate_ShouldGetAssets()
             {
-                var date = DateTime.UtcNow;
+                var date = DateTime.UtcNow.AddDays(-1);
 
                 var stats = await _ukraineStatService.GetAssetStats(date);
 
@@ -44,6 +42,17 @@ namespace TestProject1
                 var stats = await _ukraineStatService.GetAssetStats(date);
 
                 stats.Count().Should().Be(0);
+            }
+
+
+            [TestMethod]
+            public void UkrainStat_ValidDate_ShouldGetImageUrl()
+            {
+                var date = DateTime.UtcNow.AddDays(-1);
+
+                var url = _ukraineStatService.GetInfographicUrl(date);
+
+                url.Should().NotBe("");
             }
         }
     }

@@ -11,19 +11,15 @@
 
   <ItemGroup>
     <Compile Remove="Models\**" />
-    <Compile Remove="NewFolder\**" />
     <Compile Remove="Startup\**" />
     <Compile Remove="Tests\**" />
     <Content Remove="Models\**" />
-    <Content Remove="NewFolder\**" />
     <Content Remove="Startup\**" />
     <Content Remove="Tests\**" />
     <EmbeddedResource Remove="Models\**" />
-    <EmbeddedResource Remove="NewFolder\**" />
     <EmbeddedResource Remove="Startup\**" />
     <EmbeddedResource Remove="Tests\**" />
     <None Remove="Models\**" />
-    <None Remove="NewFolder\**" />
     <None Remove="Startup\**" />
     <None Remove="Tests\**" />
   </ItemGroup>
@@ -69,7 +65,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="BackgroundJobs\Ukraine\" />
     <Folder Include="Commands\Mocking\Images\Generated\" />
   </ItemGroup>
 
