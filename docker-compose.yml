@@ -1,0 +1,14 @@
+﻿version: '3'
+
+services:
+    discordbot:
+        image: 192.168.1.136:9005/dolores:latest
+        container_name: dolores
+        environment:
+            - DiscordKey=/
+            - DiscordKey=
+            - DiscordWebhookUrl
+            - RocketLaunchLiveAPIKey=
+            - NasaAPIKey=
+            - RussianLossesWebhook=
+        restart: unless-stopped
