@@ -70,11 +70,6 @@ namespace Dolores.Clients.Discord
             _commands.CommandExecuted += Commands_CommandExecuted;
             _commands.CommandErrored += Commands_CommandErrored;
 
-            //_commands.RegisterCommands<SloganizerCommand>();
-            //_commands.RegisterCommands<SpaceCommand>();
-            //_commands.RegisterCommands<TimeoutRoulette>();
-            //_commands.SetHelpFormatter<MockingFormatter>();
-
             _slashCommands.RegisterCommands<MockCommand>(guildId: 968181128504676372);
             _slashCommands.RegisterCommands<SloganizerCommand>(guildId: 968181128504676372);
             _slashCommands.RegisterCommands<YarnCommand>(guildId: 968181128504676372);

@@ -15,6 +15,9 @@ using Serilog.Sinks.Grafana.Loki;
 using System.Net.NetworkInformation;
 using Dolores.BackgroundJobs.Space.RocketLaunchLive.Models;
 using Dolores.BackgroundJobs.Space.NasasAPOD.Model;
+using Dolores.Services.UkraineStats;
+using Dolores.BackgroundJobs.Ukraine.Models;
+using Dolores.Services.UkraineStats.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +92,13 @@ var sloganizerOptions = new SloganizerOptions()
     BaseUrl = "http://www.sloganizer.net"
 };
 
+var milStatsOptions = new Ukraine_MilStatsJobOptions()
+{
+    WebookUrl = Environment.GetEnvironmentVariable("RussianLossesWebhook")
+};
+
+var ukraineStats_ServiceOptions = new UkraineStats_Service_Options();
+
 var rocketLaunchOptions = new RocketLaunchLiveJobOptions(); 
 var apodOptions = new APODJobOptions(); 
 
@@ -101,6 +111,10 @@ builder.Services.AddSingleton<HttpClient, HttpClient>(provider => httpClient)
                     .AddSingleton(provider => rocketLaunchOptions)
                     .AddSingleton(provider => apodOptions)
                     .AddHostedService<APODJob>()
+                    .AddSingleton(p => milStatsOptions)
+                    .AddSingleton(p => ukraineStats_ServiceOptions)
+                    .AddSingleton<IUkraineStats_Service, UkraineStats_Service>()
+                    .AddHostedService<MilStatsJob>()
                     .AddHostedService<RocketLaunchLiveJob>()
                     .AddSingleton<DSharpPlus.DiscordClient, DSharpPlus.DiscordClient>(provider => dsharpClient);
 
