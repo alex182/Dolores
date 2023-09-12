@@ -11,4 +11,5 @@ services:
             - RocketLaunchLiveAPIKey=
             - NasaAPIKey=
             - RussianLossesWebhook=
+            - RussianLossesRuntime=7:2:0
         restart: unless-stopped

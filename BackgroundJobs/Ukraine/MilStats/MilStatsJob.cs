@@ -18,7 +18,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dolores.BackgroundJobs.Space.NasasAPOD
+namespace Dolores.BackgroundJobs.Ukraine.MilStats
 {
     public class MilStatsJob : BaseJob
     {
@@ -48,7 +48,7 @@ namespace Dolores.BackgroundJobs.Space.NasasAPOD
 
                     if (currentTime.TimeOfDay.Hours == _jobOptions.RunTime.Hours && currentTime.TimeOfDay.Minutes == _jobOptions.RunTime.Minutes)
                     {
-                            var assets = await _ukraineStatsService.GetAssetStats(currentTime);
+                        var assets = await _ukraineStatsService.GetAssetStats(currentTime);
                             var imgUrl = _ukraineStatsService.GetInfographicUrl(currentTime);
                             await SendMilStats(assets, imgUrl);
                     }

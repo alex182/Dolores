@@ -6,6 +6,7 @@ using OpenQA.Selenium.Support.UI;
 using Serilog;
 using System;
 using System.Text.RegularExpressions;
+using RandomUserAgent;
 
 
 
@@ -30,6 +31,12 @@ namespace Dolores.Services.UkraineStats
         {
             var options = new ChromeOptions();
             options.AddArgument("--headless=new");
+            options.AddArgument("--headless");
+            options.AddArgument("--no-sandbox");
+            options.AddArgument($"user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36");
+            options.AddArgument("--disable-dev-shm-usage");
+            options.AddArgument("--enable-javascript");
+            options.AddArgument("--window-size=1920,1200");
             var driver = new ChromeDriver(options);
             driver.Navigate().GoToUrl(url);
 
@@ -64,6 +71,8 @@ namespace Dolores.Services.UkraineStats
             var results = new List<AssetStat>();
             var url = BuildUrl(date);
 
+            var elementToWaitFor = "//p[contains(text(),'The total combat losses of the enemy from')]";
+
             var pageSource = GetPageSource(url);
 
             if (string.IsNullOrEmpty(pageSource))
@@ -73,6 +82,13 @@ namespace Dolores.Services.UkraineStats
             doc.LoadHtml(pageSource);
 
             var combatLossesParagraph = doc.DocumentNode.SelectSingleNode("//p[contains(text(),'The total combat losses of the enemy from')]");
+
+            if (combatLossesParagraph == null)
+            {
+                Log.Information("{@pageSource}", pageSource);
+                return results;
+            }
+
             string[] lines = combatLossesParagraph.InnerHtml.Split(new[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries);
 
             if(lines.Length == 1)

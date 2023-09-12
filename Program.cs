@@ -18,6 +18,7 @@ using Dolores.BackgroundJobs.Space.NasasAPOD.Model;
 using Dolores.Services.UkraineStats;
 using Dolores.BackgroundJobs.Ukraine.Models;
 using Dolores.Services.UkraineStats.Models;
+using Dolores.BackgroundJobs.Ukraine.MilStats;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,9 +93,12 @@ var sloganizerOptions = new SloganizerOptions()
     BaseUrl = "http://www.sloganizer.net"
 };
 
+var russianLossesRuntime = Environment.GetEnvironmentVariable("RussianLossesRuntime");
 var milStatsOptions = new Ukraine_MilStatsJobOptions()
 {
-    WebookUrl = Environment.GetEnvironmentVariable("RussianLossesWebhook")
+    WebookUrl = Environment.GetEnvironmentVariable("RussianLossesWebhook"),
+    RunTime = string.IsNullOrEmpty(russianLossesRuntime) ? new TimeSpan(7, 2, 0) : 
+    new TimeSpan(Int32.Parse(russianLossesRuntime.Split(':')[0]), Int32.Parse(russianLossesRuntime.Split(':')[1]), Int32.Parse(russianLossesRuntime.Split(':')[2]))
 };
 
 var ukraineStats_ServiceOptions = new UkraineStats_Service_Options();

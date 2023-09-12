@@ -6,7 +6,10 @@
  #docker image push 192.168.1.136:9005/dolores:latest
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS base
-RUN apt-get update && apt-get install -y apt-utils libgdiplus libc6-dev
+RUN apt-get update && apt-get install -y apt-utils libgdiplus libc6-dev libnss3-dev libgdk-pixbuf2.0-dev libgtk-3-dev libxss-dev
+RUN apt-get install -y wget
+RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+RUN apt-get install -y ./google-chrome-stable_current_amd64.deb
 WORKDIR /app
 ENV DiscordBotCommandPrefix="/"
 ENV DiscordKey ""
@@ -14,6 +17,7 @@ ENV DiscordWebhookUrl ""
 ENV RocketLaunchLiveAPIKey ""
 ENV NasaAPIKey ""
 ENV RussianLossesWebhook ""
+ENV RussianLossesRuntime "7:2:0"
 
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
