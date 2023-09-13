@@ -36,6 +36,7 @@ namespace Dolores.Services.UkraineStats
             options.AddArgument($"user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36");
             options.AddArgument("--disable-dev-shm-usage");
             options.AddArgument("--enable-javascript");
+            options.AddArgument("--verbose");
             options.AddArgument("--window-size=1920,1200");
             var driver = new ChromeDriver(options);
             driver.Navigate().GoToUrl(url);
