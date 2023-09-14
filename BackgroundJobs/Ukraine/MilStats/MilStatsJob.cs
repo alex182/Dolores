@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -48,9 +49,11 @@ namespace Dolores.BackgroundJobs.Ukraine.MilStats
 
                     if (currentTime.TimeOfDay.Hours == _jobOptions.RunTime.Hours && currentTime.TimeOfDay.Minutes == _jobOptions.RunTime.Minutes)
                     {
+                        Log.Information("Starting MilStatsJob");
+
                         var assets = await _ukraineStatsService.GetAssetStats(currentTime);
-                            var imgUrl = _ukraineStatsService.GetInfographicUrl(currentTime);
-                            await SendMilStats(assets, imgUrl);
+                        var imgUrl = _ukraineStatsService.GetInfographicUrl(currentTime);
+                        await SendMilStats(assets, imgUrl);
                     }
 
                 }
@@ -66,27 +69,37 @@ namespace Dolores.BackgroundJobs.Ukraine.MilStats
 
         internal async Task SendMilStats(List<AssetStat> assets,string imgUrl)
         {
-            if (!assets.Any())
-            {
-                return;
-            }
-
             var message = new DiscordWebhookMessage();
 
             var embed = new Embed();
             embed.title = "🇺🇦 Russian Losses 🇺🇦";
-            embed.image = new Image
+            embed.description = "No report found for today";
+            embed.fields.Add(new Field
             {
-                url = imgUrl
-            };
+                value = " ",
+                name = " ",
+            });
 
             message.embeds.Add(embed);
 
-            foreach (var asset in assets)
+            if (assets != null)
             {
-                embed.description += $"\n{asset.AssetCategory.GetDisplayName()} - (+{asset.DailyDiff}) {asset.Total}";
-            }
+                embed.description = "";
+                message = new DiscordWebhookMessage();
 
+                embed.image = new Image
+                {
+                    url = imgUrl
+                };
+
+                message.embeds.Add(embed);
+
+                foreach (var asset in assets)
+                {
+                    embed.description += $"\n{asset.AssetCategory.GetDisplayName()} - (+{asset.DailyDiff}) {asset.Total}";
+                }
+            }
+          
             using StringContent content = new StringContent(JsonConvert.SerializeObject(message), Encoding.UTF8, "application/json");
 
         //https://discord.com/channels/968181128504676372/1065387852189409321

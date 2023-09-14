@@ -7,8 +7,8 @@ using Serilog;
 using System;
 using System.Text.RegularExpressions;
 using RandomUserAgent;
-
-
+using OpenQA.Selenium;
+using LogLevel = OpenQA.Selenium.LogLevel;
 
 namespace Dolores.Services.UkraineStats
 {
@@ -38,10 +38,13 @@ namespace Dolores.Services.UkraineStats
             options.AddArgument("--enable-javascript");
             options.AddArgument("--verbose");
             options.AddArgument("--window-size=1920,1200");
+
             var driver = new ChromeDriver(options);
             driver.Navigate().GoToUrl(url);
 
             string pageSource = driver.PageSource;
+
+            Log.Information("GetPageSource {@pageSource} {@url}", pageSource,url);
 
             return pageSource;
         }
@@ -52,7 +55,12 @@ namespace Dolores.Services.UkraineStats
 
             var url = BuildUrl(date);
 
+            Log.Information("GetInfographicUrl {@url}", url);
+
+
             var pageSource = GetPageSource(url);
+
+            Log.Information("GetInfographicUrl {@pageSource}", pageSource);
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(pageSource);
@@ -64,6 +72,9 @@ namespace Dolores.Services.UkraineStats
                imageUrl = $"{_options.BaseUrl}{imageNode.GetAttributeValue("src", "")}";
             }
 
+            Log.Information("GetInfographicUrl {@imageUrl}", imageUrl);
+
+
             return imageUrl;
         }
 
@@ -72,9 +83,15 @@ namespace Dolores.Services.UkraineStats
             var results = new List<AssetStat>();
             var url = BuildUrl(date);
 
+            Log.Information("GetAssetStats {@url}", url);
+
+
             var elementToWaitFor = "//p[contains(text(),'The total combat losses of the enemy from')]";
 
             var pageSource = GetPageSource(url);
+
+            Log.Information("GetAssetStats {@pageSource}", pageSource);
+
 
             if (string.IsNullOrEmpty(pageSource))
                 return results;
@@ -84,17 +101,21 @@ namespace Dolores.Services.UkraineStats
 
             var combatLossesParagraph = doc.DocumentNode.SelectSingleNode("//p[contains(text(),'The total combat losses of the enemy from')]");
 
+            //Log.Information("GetAssetStats {@combatLossesParagraph}", combatLossesParagraph);
+
             if (combatLossesParagraph == null)
             {
                 Log.Information("{@pageSource}", pageSource);
                 return results;
             }
 
-            string[] lines = combatLossesParagraph.InnerHtml.Split(new[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] lines = combatLossesParagraph.InnerHtml.Split(new[] { "<br/>" }, StringSplitOptions.RemoveEmptyEntries);
 
-            if(lines.Length == 1)
+            Log.Information("GetAssetStats {@lines}", lines);
+
+            if (lines.Length == 1)
             {
-                return results; 
+                return null;
             }
 
             foreach (string line in lines.ToList().GetRange(1, 12))
